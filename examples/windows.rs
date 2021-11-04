@@ -63,10 +63,10 @@ fn main() {
         .create_window(1080 as _, 900 as _, "Window 2", glfw::WindowMode::Windowed)
         .expect("Failed to create GLFW window.");
 
-    window.set_pos(200, 200);
+    window.set_pos(100, 100);
     window.set_size_polling(true);
 
-    window2.set_pos(1080 + 300, 200);
+    window2.set_pos(1080 + 200, 100);
     window2.set_size_polling(true);
 
     window.focus();

@@ -1,4 +1,4 @@
-use std::{env::current_dir, process::Command};
+use std::{env::current_dir, path::Path, process::Command};
 
 fn main() {
     println!("cargo:warning=You are building bgfx, bimg and bx from the source code, this may take a while if it's the first time");
@@ -14,8 +14,18 @@ fn main() {
 
     //? Generate
     let makefile_target;
-    let mut cmd = Command::new(format!("{}/bx/tools/bin/{}/genie", curdir, os));
-    cmd.current_dir(format!("{}/bgfx", curdir));
+    // Copy toolchain.lua file to bx/scripts/toolchain.lua
+    if !Path::new("bgfx").exists() {
+        Command::new("sh").arg(format!("{}/update.sh", &curdir)).current_dir(&curdir).spawn().expect("Failed to update sources");
+    }
+
+    Command::new("cp")
+        .arg("toolchain.lua")
+        .arg("bx/scripts/toolchain.lua")
+        .spawn().expect("Failed to copy toolchain file to directory");
+
+    let mut cmd = Command::new(format!("{}/bx/tools/bin/{}/genie", &curdir, os));
+    cmd.current_dir(format!("{}/bgfx", &curdir));
     // cmd.arg("--with-shared-lib");
 
     if os == "windows" {
@@ -98,6 +108,4 @@ fn main() {
     bindings
         .write_to_file("src/ffi.rs")
         .expect("Couldn't write bindings!");
-
-    println!("cargo:warning=Finished building");
 }
