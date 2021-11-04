@@ -733,6 +733,7 @@ function toolchain(_buildDir, _libDir)
 			"-Wundef",
 --			"-Wuseless-cast",
 			"-fPIE",
+			"-fPIC",
 		}
 		links {
 			"rt",
