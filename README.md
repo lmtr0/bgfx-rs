@@ -25,4 +25,3 @@ The library doesn't include any window handling and that has to be provided by t
 ## License
 
 Licensed under [BSD 2-Clause](https://bkaradzic.github.io/bgfx/license.html) to keep the license the same the BGFX code.
-

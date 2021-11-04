@@ -1,6 +1,6 @@
 use core::ffi::c_void;
 use std::mem::MaybeUninit;
-STATIC g_vtbl: *const bgfx_sys::bgfx_interface_vtbl_t = std::ptr::null();
+// STATIC g_vtbl: *const bgfx_sys::bgfx_interface_vtbl_t = std::ptr::null();
 
 pub fn set_interface(face: *const bgfx_sys::bgfx_interface_vtbl_t) {
 g_vtbl = face;

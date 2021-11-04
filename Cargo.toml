@@ -18,7 +18,7 @@ exclude = [
 maintenance = {status = "actively-developed"}
 
 [dependencies]
-bgfx-sys = "0.3"
+bgfx-sys = { path = "sys"}
 bitflags = "1.2"
 cfixed-string = "1.0"
 
@@ -27,3 +27,7 @@ glfw = "0.41"
 raw-window-handle = "0.3"
 glam = "0.15"
 
+[workspace]
+members = [
+  "sys/"
+]

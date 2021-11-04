@@ -1,0 +1,36 @@
+[package]
+license = "BSD-2-Clause"
+authors = ["Daniel Collin <daniel@collin.com>", "Higenku Dev's <higenku@protonmail.com>"]
+name = "bgfx-sys"
+version = "0.4.0"
+edition = "2021"
+
+exclude = [
+    "bgfx/bindings",
+    "bgfx/examples",
+    "bgfx/3rdparty/cgltf",
+    "bgfx/3rdparty/dear-imgui",
+    "bgfx/3rdparty/glslang",
+    "bgfx/3rdparty/fcpp",
+    "bgfx/3rdparty/glsl-optimizer",
+    "bgfx/3rdparty/spirv-cross",
+    "bgfx/3rdparty/spirv-headers",
+    "bgfx/3rdparty/spirv-tools",
+    "bgfx/tools",
+]
+
+[badges]
+maintenance = {status = "actively-developed"}
+
+[dev-dependencies]
+glfw = "0.41"
+raw-window-handle = "0.3"
+glam = "0.15"
+
+[build-dependencies]
+bindgen = "0.59.1"
+cc = "*"
+[dependencies]
+
+[features]
+bgfx-debug = []
