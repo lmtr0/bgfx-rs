@@ -1,6 +1,6 @@
 [package]
 license = "BSD-2-Clause"
-authors = ["Daniel Collin <daniel@collin.com>", "Higenku Dev's <higenku@protonmail.com>"]
+authors = ["Daniel Collin <daniel@collin.com>", "litch0 <lmtr0@protonmail.ch>"]
 name = "bgfx-sys"
 version = "0.4.0"
 edition = "2021"
