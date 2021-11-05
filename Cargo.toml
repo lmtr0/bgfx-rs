@@ -11,7 +11,7 @@ edition = "2018"
 readme = "README.md"
 
 [lib]
-crate_type = ["dylib"]
+crate_type = ["rlib", "dylib"]
 
 exclude = [
   "resources/"

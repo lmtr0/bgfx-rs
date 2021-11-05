@@ -312,7 +312,13 @@ pub const BGFX_CUBE_MAP_NEGATIVE_Y: u32 = 3;
 pub const BGFX_CUBE_MAP_POSITIVE_Z: u32 = 4;
 pub const BGFX_CUBE_MAP_NEGATIVE_Z: u32 = 5;
 pub type va_list = __builtin_va_list;
-pub type size_t = ::std::os::raw::c_ulonglong;
+pub type __uint8_t = ::std::os::raw::c_uchar;
+pub type __uint16_t = ::std::os::raw::c_ushort;
+pub type __int32_t = ::std::os::raw::c_int;
+pub type __uint32_t = ::std::os::raw::c_uint;
+pub type __int64_t = ::std::os::raw::c_long;
+pub type __uint64_t = ::std::os::raw::c_ulong;
+pub type size_t = ::std::os::raw::c_ulong;
 pub const BGFX_FATAL_DEBUG_CHECK: bgfx_fatal = 0;
 #[doc = " ( 0)"]
 pub const BGFX_FATAL_INVALID_SHADER: bgfx_fatal = 1;
@@ -824,7 +830,7 @@ pub struct bgfx_callback_vtbl_s {
             _filePath: *const ::std::os::raw::c_char,
             _line: u16,
             _format: *const ::std::os::raw::c_char,
-            _argList: va_list,
+            _argList: *mut __va_list_tag,
         ),
     >,
     pub profiler_begin: ::std::option::Option<
@@ -1939,7 +1945,7 @@ extern "C" {
         _y: u16,
         _attr: u8,
         _format: *const ::std::os::raw::c_char,
-        _argList: va_list,
+        _argList: *mut __va_list_tag,
     );
 }
 extern "C" {
@@ -4799,7 +4805,7 @@ pub struct bgfx_interface_vtbl {
             _y: u16,
             _attr: u8,
             _format: *const ::std::os::raw::c_char,
-            _argList: va_list,
+            _argList: *mut __va_list_tag,
         ),
     >,
     pub dbg_text_image: ::std::option::Option<
@@ -5783,4 +5789,12 @@ pub struct bgfx_interface_vtbl {
 extern "C" {
     pub fn bgfx_get_interface(_version: u32) -> *mut bgfx_interface_vtbl_t;
 }
-pub type __builtin_va_list = *mut ::std::os::raw::c_char;
+pub type __builtin_va_list = [__va_list_tag; 1usize];
+#[repr(C)]
+#[derive(Debug, Copy, Clone)]
+pub struct __va_list_tag {
+    pub gp_offset: ::std::os::raw::c_uint,
+    pub fp_offset: ::std::os::raw::c_uint,
+    pub overflow_arg_area: *mut ::std::os::raw::c_void,
+    pub reg_save_area: *mut ::std::os::raw::c_void,
+}
