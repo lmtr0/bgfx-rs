@@ -32,5 +32,5 @@ bindgen = "0.59.1"
 cc = "*"
 [dependencies]
 
-[features]
-bgfx-debug = []
+# [features]
+# bgfx-debug = []
