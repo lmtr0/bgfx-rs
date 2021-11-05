@@ -16,14 +16,13 @@ fn main() {
     let makefile_target;
     // Copy toolchain.lua file to bx/scripts/toolchain.lua
     if !Path::new("bgfx").exists() {
-        // update sources and toolchain file
-        Command::new("sh").args(["update.sh", "--depth=1", "https://github.com/bkaradzic/bgfx", "bgfx"]).spawn().expect("Failed to clone bgfx").wait().expect("Faield to wait for script");
-        Command::new("cp")
-            .arg("toolchain.lua")
-            .arg("bx/scripts/toolchain.lua")
-            .spawn().expect("Failed to copy toolchain file to directory")
-            .wait().expect("Faield to wait for script");
+        Command::new("sh").arg(format!("{}/update.sh", &curdir)).current_dir(&curdir).spawn().expect("Failed to update sources");
     }
+
+    Command::new("cp")
+        .arg("toolchain.lua")
+        .arg("bx/scripts/toolchain.lua")
+        .spawn().expect("Failed to copy toolchain file to directory");
 
     let mut cmd;
     if cfg!(windows) {
@@ -52,6 +51,7 @@ fn main() {
     }
     else if os == "linux" {
         cmd.args(["--gcc=linux-gcc", "gmake"]);
+        // makefile_target = "gmake-linux-clang";
         makefile_target = "gmake-linux";
     }
     else {
@@ -69,37 +69,46 @@ fn main() {
     ]);
     cmd.spawn().expect("Failed to build bgfx project").wait_with_output().expect("Failed to execute the make command to build the bgfx project");
 
-    let bgfx_search;
+    // bgfx libs
+
+    println!("cargo:rustc-link-arg=prefer-dynamic");
 
     if env.contains("windows") {
-        bgfx_search = format!("{}/bgfx/.build/win64_mingw-gcc/bin", curdir);        
+        println!("cargo:rustc-link-search={}/bgfx/.build/win64_mingw-gcc/bin", curdir);
+        println!("cargo:rustc-link-lib=static=bgfxRelease");
+        println!("cargo:rustc-link-lib=static=bimg_decodeRelease");
+        println!("cargo:rustc-link-lib=static=bimgRelease");
+        println!("cargo:rustc-link-lib=static=bxRelease");
 
         println!("cargo:rustc-link-lib=winpthread");
         println!("cargo:rustc-link-lib=stdc++");
         println!("cargo:rustc-link-lib=gdi32");
         println!("cargo:rustc-link-lib=psapi");
+        // println!("cargo:rustc-link-lib=");
 
     } else if env.contains("darwin") {
-        bgfx_search = format!("{}/bgfx/.build/osx-x64/bin", curdir);
+        println!("cargo:rustc-link-search={}/bgfx/.build/osx_x64/bin", curdir);  
+        println!("cargo:rustc-link-lib=static=bgfxRelease");
+        println!("cargo:rustc-link-lib=static=bimg_decodeRelease");
+        println!("cargo:rustc-link-lib=static=bimgRelease");
+        println!("cargo:rustc-link-lib=static=bxRelease");
 
         println!("cargo:rustc-link-lib=framework=Metal");
         println!("cargo:rustc-link-lib=framework=MetalKit");
     } else {
-        bgfx_search = format!("{}/bgfx/.build/linux64_gcc/bin", curdir);  
-
+        println!("cargo:rustc-link-search={}/bgfx/.build/linux64_gcc/bin", curdir);  
+        println!("cargo:rustc-link-lib=static=bgfxRelease");
+        println!("cargo:rustc-link-lib=static=bimg_decodeRelease");
+        println!("cargo:rustc-link-lib=static=bimgRelease");
+        println!("cargo:rustc-link-lib=static=bxRelease");
+        
         println!("cargo:rustc-link-lib=pthread");
         println!("cargo:rustc-link-lib=stdc++");
         println!("cargo:rustc-link-lib=GL");
         println!("cargo:rustc-link-lib=X11");
         println!("cargo:rustc-link-lib=vulkan");
     }
-    
-    // bgfx libs
-    println!("cargo:rustc-link-search={}", bgfx_search);
-    println!("cargo:rustc-link-lib=static=bgfxRelease");
-    println!("cargo:rustc-link-lib=static=bimg_decodeRelease");
-    println!("cargo:rustc-link-lib=static=bimgRelease");
-    println!("cargo:rustc-link-lib=static=bxRelease");
+
 
     //? generate ffi
     let bindings = bindgen::builder()
