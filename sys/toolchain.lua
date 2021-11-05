@@ -371,11 +371,16 @@ function toolchain(_buildDir, _libDir)
 				if not os.getenv("OSXCROSS") then
 					print("Set OSXCROSS environment variable.")
 				end
-
+				
 				local osxToolchain = "x86_64-apple-darwin15-"
-				premake.gcc.cc  = "$(OSXCROSS)/target/bin/" .. osxToolchain .. "clang"
-				premake.gcc.cxx = "$(OSXCROSS)/target/bin/" .. osxToolchain .. "clang++"
-				premake.gcc.ar  = "$(OSXCROSS)/target/bin/" .. osxToolchain .. "ar"
+
+				if os.getenv("OSX_TOOLCHAIN") then
+					osxToolchain = os.getenv("OSX_TOOLCHAIN")
+				end
+				
+				premake.gcc.cc  = "$(OSXCROSS)/bin/o64-clang"
+				premake.gcc.cxx = "$(OSXCROSS)/bin/o64-clang++"
+				premake.gcc.ar  = "$(OSXCROSS)/bin/".. osxToolchain .."-ar"
 			end
 
 			location (path.join(_buildDir, "projects", _ACTION .. "-" .. _OPTIONS["gcc"]))
@@ -646,6 +651,7 @@ function toolchain(_buildDir, _libDir)
 			"-Wunused-value",
 			"-Wundef",
 			"-fPIE",
+			"-D__REQUIRED_RPCNDR_H_VERSION__=475", -- for mingw cross compilation
 		}
 		linkoptions {
 			"-Wl,--gc-sections",
@@ -1003,8 +1009,14 @@ function toolchain(_buildDir, _libDir)
 		buildoptions {
 			"-arch x86_64",
 			"-msse2",
-			"-target x86_64-apple-macos" .. (#macosPlatform > 0 and macosPlatform or "10.11"),
+			"-target x86_64-apple-macos10.11",
 			"-fPIE",
+			"-fPIC",
+			-- "-I/opt/osx_amd64/SDK/MacOSX10.8.sdk/usr/include/c++/4.2.1/tr1/",
+			-- "-I/opt/osx_amd64/SDK/MacOSX10.8.sdk/usr/include/c++/4.2.1/",
+			-- "-stdlib=libc++",
+			-- "-stdlib=libstdc++",
+			"-std=c++14"
 		}
 
 	configuration { "osx-arm64" }

@@ -16,13 +16,14 @@ fn main() {
     let makefile_target;
     // Copy toolchain.lua file to bx/scripts/toolchain.lua
     if !Path::new("bgfx").exists() {
-        Command::new("sh").arg(format!("{}/update.sh", &curdir)).current_dir(&curdir).spawn().expect("Failed to update sources");
+        Command::new("sh").arg(format!("{}/update.sh", &curdir)).current_dir(&curdir).spawn().expect("Failed to update sources").wait().expect("Failed to copy toolchain");
     }
 
     Command::new("cp")
         .arg("toolchain.lua")
         .arg("bx/scripts/toolchain.lua")
-        .spawn().expect("Failed to copy toolchain file to directory");
+        .spawn().expect("Failed to copy toolchain file to directory")
+        .wait().expect("Failed to copy toolchain");
 
     let mut cmd;
     if cfg!(windows) {
@@ -47,7 +48,7 @@ fn main() {
     }
     else if os == "darwing" {
         cmd.args(["--gcc=osx-x64", "gmake"]);
-        makefile_target = "osx-x64";
+        makefile_target = "gmake-osx-x64";
     }
     else if os == "linux" {
         cmd.args(["--gcc=linux-gcc", "gmake"]);
@@ -58,7 +59,7 @@ fn main() {
         panic!("Target not supported");
     }
 
-    cmd.spawn().expect("Failed to start generate command").wait_with_output().expect("Failed to execute the generate command");
+    cmd.spawn().expect("Failed to start generate command").wait().expect("Failed to execute the generate command");
 
     //? build
     let mut cmd = Command::new("make");
@@ -67,7 +68,7 @@ fn main() {
         "-C", format!("bgfx/.build/projects/{}", makefile_target).as_str(), 
         "config=release64"
     ]);
-    cmd.spawn().expect("Failed to build bgfx project").wait_with_output().expect("Failed to execute the make command to build the bgfx project");
+    cmd.spawn().expect("Failed to build bgfx project").wait().expect("Failed to execute the make command to build the bgfx project");
 
     // bgfx libs
 
