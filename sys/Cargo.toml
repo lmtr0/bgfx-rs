@@ -2,7 +2,7 @@
 license = "BSD-2-Clause"
 authors = ["Daniel Collin <daniel@collin.com>", "litch0 <lmtr0@protonmail.ch>"]
 name = "bgfx-sys"
-version = "0.4.0"
+version = "0.5.0"
 edition = "2021"
 
 exclude = [
@@ -34,3 +34,7 @@ cc = "*"
 
 # [features]
 # bgfx-debug = []
+
+[target.x86_64-apple-darwin]
+linker = "o64-clang"
+ar = "x86_64-apple-darwin20.4-ar"

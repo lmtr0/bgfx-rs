@@ -3,15 +3,20 @@ use std::{env::{current_dir}, path::Path, process::Command};
 fn main() {
     println!("cargo:warning=You are building bgfx, bimg and bx from the source code, this may take a while if it's the first time");
 
+    let env = std::env::var("TARGET").unwrap();
+
+    let isdarwin = env.contains("darwin");
+    let iswindows = env.contains("windows");
+    let isunix = env.contains("linux");
+
+
     let curdir = current_dir().unwrap().as_path().display().to_string();
     
-    let env = std::env::var("TARGET").unwrap();
-    let os = match env.as_str() {
-        "x86_64-apple-darwin" => "darwing",
-        "x86_64-pc-windows-gnu" | "x86_64-uwp-windows-gnu" => "windows",
-        "x86_64-unknown-linux-gnu" => "linux",
-        _ => panic!("Environment not supported"),
-    };
+    // defaults to /opt/osxcross
+    if std::env::var("OSXCROSS").is_err() {
+        std::env::set_var("OSXCROSS", "/opt/osx")
+    }
+
     //? Generate
     let makefile_target;
     // Copy toolchain.lua file to bx/scripts/toolchain.lua
@@ -19,6 +24,7 @@ fn main() {
         Command::new("sh").arg(format!("{}/update.sh", &curdir)).current_dir(&curdir).spawn().expect("Failed to update sources").wait().expect("Failed to copy toolchain");
     }
 
+    // copy the newers toolchain to the build direcoty
     Command::new("cp")
         .arg("toolchain.lua")
         .arg("bx/scripts/toolchain.lua")
@@ -42,15 +48,15 @@ fn main() {
     cmd.current_dir(format!("{}/bgfx", &curdir));
     // cmd.arg("--with-shared-lib");
 
-    if os == "windows" {
+    if iswindows {
         cmd.args(["--gcc=mingw-gcc", "gmake"]);
         makefile_target = "gmake-mingw-gcc";
     }
-    else if os == "darwing" {
+    else if isdarwin {
         cmd.args(["--gcc=osx-x64", "gmake"]);
         makefile_target = "gmake-osx-x64";
     }
-    else if os == "linux" {
+    else if isunix {
         cmd.args(["--gcc=linux-gcc", "gmake"]);
         // makefile_target = "gmake-linux-clang";
         makefile_target = "gmake-linux";
@@ -59,7 +65,9 @@ fn main() {
         panic!("Target not supported");
     }
 
-    cmd.spawn().expect("Failed to start generate command").wait().expect("Failed to execute the generate command");
+    println!("compiling makefile");
+    cmd.spawn().expect("Failed to start generate command").wait_with_output().expect("Failed to execute the generate command");
+    println!("Finished makefile");
 
     //? build
     let mut cmd = Command::new("make");
@@ -72,9 +80,11 @@ fn main() {
 
     // bgfx libs
 
-    println!("cargo:rustc-link-arg=prefer-dynamic");
+    if iswindows {
+        std::fs::write("log", "Compiling to Windows");
 
-    if env.contains("windows") {
+        println!("cargo:warning=Compiling to Windows");
+
         println!("cargo:rustc-link-search={}/bgfx/.build/win64_mingw-gcc/bin", curdir);
         println!("cargo:rustc-link-lib=static=bgfxRelease");
         println!("cargo:rustc-link-lib=static=bimg_decodeRelease");
@@ -87,16 +97,23 @@ fn main() {
         println!("cargo:rustc-link-lib=psapi");
         // println!("cargo:rustc-link-lib=");
 
-    } else if env.contains("darwin") {
-        println!("cargo:rustc-link-search={}/bgfx/.build/osx_x64/bin", curdir);  
+    } else if isdarwin {
+        std::fs::write("log", "Compiling to Darwin");
+
+        println!("cargo:warning=Compiling to Darwin");
+
+        println!("cargo:rustc-link-search={}/bgfx/.build/osx-x64/bin", curdir);  
         println!("cargo:rustc-link-lib=static=bgfxRelease");
         println!("cargo:rustc-link-lib=static=bimg_decodeRelease");
         println!("cargo:rustc-link-lib=static=bimgRelease");
         println!("cargo:rustc-link-lib=static=bxRelease");
 
-        println!("cargo:rustc-link-lib=framework=Metal");
-        println!("cargo:rustc-link-lib=framework=MetalKit");
-    } else {
+        // println!("cargo:rustc-link-lib=framework=Metal");
+        // println!("cargo:rustc-link-lib=framework=MetalKit");
+    } else if isunix {
+        std::fs::write("log", "Compiling to Unix (linux)");
+        println!("cargo:warning=Compiling to Unix (linux)");
+
         println!("cargo:rustc-link-search={}/bgfx/.build/linux64_gcc/bin", curdir);  
         println!("cargo:rustc-link-lib=static=bgfxRelease");
         println!("cargo:rustc-link-lib=static=bimg_decodeRelease");
@@ -112,33 +129,33 @@ fn main() {
 
 
     //? generate ffi
-    let bindings = bindgen::builder()
-        .layout_tests(false)
-        .prepend_enum_name(false)
-        .allowlist_function("bgfx.*")
-        .allowlist_type("bgfx_.*")
-        .allowlist_type("BGFX_.*")
-        .allowlist_var("bgfx_.*")
-        .allowlist_var("BGFX_.*")
-        .allowlist_var("__va_list_tag")
-        .blocklist_item("int_.*")
-        .blocklist_item("uint_.*")
-        .blocklist_item("__gnu_va_list")
-        // .blocklist_item("__.*")
-        .blocklist_item("intmax_t")
-        .blocklist_item("uintmax_t")
-        .blocklist_item("wchar_t")
-        .blocklist_item("_Float32")
-        .blocklist_item("_Float64")
-        .blocklist_item("_Float32x")
-        .blocklist_item("_Float64x")
+    // let bindings = bindgen::builder()
+    //     .layout_tests(false)
+    //     .prepend_enum_name(false)
+    //     .allowlist_function("bgfx.*")
+    //     .allowlist_type("bgfx_.*")
+    //     .allowlist_type("BGFX_.*")
+    //     .allowlist_var("bgfx_.*")
+    //     .allowlist_var("BGFX_.*")
+    //     .allowlist_var("__va_list_tag")
+    //     .blocklist_item("int_.*")
+    //     .blocklist_item("uint_.*")
+    //     .blocklist_item("__gnu_va_list")
+    //     // .blocklist_item("__.*")
+    //     .blocklist_item("intmax_t")
+    //     .blocklist_item("uintmax_t")
+    //     .blocklist_item("wchar_t")
+    //     .blocklist_item("_Float32")
+    //     .blocklist_item("_Float64")
+    //     .blocklist_item("_Float32x")
+    //     .blocklist_item("_Float64x")
         
-        .header("src/header.h")
-        .allowlist_recursively(true)
-        .clang_arg("-Ibx/include")
-        .generate().expect("Failed to generate bindings");
+    //     .header("src/header.h")
+    //     .allowlist_recursively(true)
+    //     .clang_arg("-Ibx/include")
+    //     .generate().expect("Failed to generate bindings");
 
-    bindings
-        .write_to_file("src/ffi.rs")
-        .expect("Couldn't write bindings!");
+    // bindings
+    //     .write_to_file("src/ffi.rs")
+    //     .expect("Couldn't write bindings!");
 }

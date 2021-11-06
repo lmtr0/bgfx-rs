@@ -372,7 +372,7 @@ function toolchain(_buildDir, _libDir)
 					print("Set OSXCROSS environment variable.")
 				end
 				
-				local osxToolchain = "x86_64-apple-darwin15-"
+				local osxToolchain = "x86_64-apple-darwin15"
 
 				if os.getenv("OSX_TOOLCHAIN") then
 					osxToolchain = os.getenv("OSX_TOOLCHAIN")
@@ -380,7 +380,7 @@ function toolchain(_buildDir, _libDir)
 				
 				premake.gcc.cc  = "$(OSXCROSS)/bin/o64-clang"
 				premake.gcc.cxx = "$(OSXCROSS)/bin/o64-clang++"
-				premake.gcc.ar  = "$(OSXCROSS)/bin/".. osxToolchain .."-ar"
+				premake.gcc.ar  = "$(OSXCROSS)/bin/x86_64-apple-darwin20.4-ar"
 			end
 
 			location (path.join(_buildDir, "projects", _ACTION .. "-" .. _OPTIONS["gcc"]))
@@ -1004,19 +1004,17 @@ function toolchain(_buildDir, _libDir)
 		targetdir (path.join(_buildDir, "osx-x64/bin"))
 		objdir (path.join(_buildDir, "osx-x64/obj"))
 		linkoptions {
-			"-arch x86_64",
+			"-arch x86_64",			
 		}
+
 		buildoptions {
 			"-arch x86_64",
 			"-msse2",
-			"-target x86_64-apple-macos10.11",
+
 			"-fPIE",
 			"-fPIC",
-			-- "-I/opt/osx_amd64/SDK/MacOSX10.8.sdk/usr/include/c++/4.2.1/tr1/",
-			-- "-I/opt/osx_amd64/SDK/MacOSX10.8.sdk/usr/include/c++/4.2.1/",
+
 			-- "-stdlib=libc++",
-			-- "-stdlib=libstdc++",
-			"-std=c++14"
 		}
 
 	configuration { "osx-arm64" }
