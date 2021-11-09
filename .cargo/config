@@ -1,5 +1,5 @@
 [build]
-rustflags = ["-C", "prefer-dynamic"]
+# rustflags = ["-C", "prefer-dynamic"]
 
 [target.x86_64-apple-darwin]
 linker = "o64-clang"
