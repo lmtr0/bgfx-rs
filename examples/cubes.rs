@@ -1,5 +1,4 @@
-use bgfx::*;
-use bgfx_rs::bgfx;
+use bgfx_rs::*;
 use glam::{EulerRot, Mat4, Vec3};
 use glfw::{Action, Context, Key, Window};
 use raw_window_handle::{HasRawWindowHandle, RawWindowHandle};
@@ -110,7 +109,7 @@ fn get_render_type() -> RendererType {
     RenderType::Count
 }
 
-fn main() -> std::io::Result<()> {
+pub fn main() -> std::io::Result<()> {
     let mut glfw = glfw::init(glfw::FAIL_ON_ERRORS).unwrap();
 
     let (mut window, events) = glfw

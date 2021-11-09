@@ -95,7 +95,7 @@ fn load_shader_program(vs: &str, ps: &str) -> std::io::Result<Program> {
     Ok(bgfx::create_program(&vs_shader, &ps_shader, false))
 }
 
-fn main() {
+pub fn main() -> std::io::Result<()> {
     let mut glfw = glfw::init(glfw::FAIL_ON_ERRORS).expect("Error initializing library");
 
     let (mut window, events) = glfw

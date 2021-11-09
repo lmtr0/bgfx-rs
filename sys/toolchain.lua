@@ -652,9 +652,11 @@ function toolchain(_buildDir, _libDir)
 			"-Wundef",
 			"-fPIE",
 			"-D__REQUIRED_RPCNDR_H_VERSION__=475", -- for mingw cross compilation
+			"-fno-threadsafe-statics", -- prevent error undefined reference to `__cxa_guard_release'
 		}
 		linkoptions {
 			"-Wl,--gc-sections",
+			"-fno-threadsafe-statics", -- prevent error undefined reference to `__cxa_guard_release'
 			"-static",
 			"-static-libgcc",
 			"-static-libstdc++",
@@ -677,7 +679,7 @@ function toolchain(_buildDir, _libDir)
 		libdirs {
 			path.join(_libDir, "lib/win64_mingw-gcc"),
 		}
-		buildoptions { "-m64" }
+		buildoptions { "-m64", "-std=gnu++14" }
 
 	configuration { "mingw-clang" }
 		buildoptions {
@@ -1004,17 +1006,17 @@ function toolchain(_buildDir, _libDir)
 		targetdir (path.join(_buildDir, "osx-x64/bin"))
 		objdir (path.join(_buildDir, "osx-x64/obj"))
 		linkoptions {
-			"-arch x86_64",			
+			-- "-m64",			
 		}
 
 		buildoptions {
-			"-arch x86_64",
+			-- "-m64",
 			"-msse2",
 
 			"-fPIE",
 			"-fPIC",
 
-			-- "-stdlib=libc++",
+			"-stdlib=libc++",
 		}
 
 	configuration { "osx-arm64" }

@@ -3,7 +3,7 @@ use std::mem::MaybeUninit;
 // STATIC g_vtbl: *const bgfx_sys::bgfx_interface_vtbl_t = std::ptr::null();
 
 pub fn set_interface(face: *const bgfx_sys::bgfx_interface_vtbl_t) {
-g_vtbl = face;
+    g_vtbl = face;
 }
 
 use cfixed_string::CFixedString;
@@ -2188,7 +2188,7 @@ impl FrameBuffer {
     /// * `depth_format`:
     /// Window back buffer depth format.
     pub fn create_frame_buffer_from_nwh(
-        nwh: &c_void,
+        nwh: *mut c_void,
         width: u16,
         height: u16,
         params: CreateFrameBufferFromNwhArgs,
@@ -4915,7 +4915,7 @@ pub fn create_frame_buffer_from_attachment(
 /// * `depth_format`:
 /// Window back buffer depth format.
 pub fn create_frame_buffer_from_nwh(
-    nwh: &c_void,
+    nwh: *mut c_void,
     width: u16,
     height: u16,
     params: CreateFrameBufferFromNwhArgs,

@@ -11,7 +11,7 @@ edition = "2021"
 readme = "README.md"
 
 [lib]
-crate_type = ["rlib", "dylib"]
+crate_type = [ "rlib" ]
 
 exclude = [
   "resources/"
@@ -26,11 +26,14 @@ bitflags = "1.2"
 cfixed-string = "1.0"
 
 [dev-dependencies]
-glfw = "0.41"
-raw-window-handle = "0.3"
-glam = "0.15"
+glfw = "*"
+glam = "*"
+raw-window-handle = "*"
 
+[target.x86_64-apple-darwin]
+linker = "o64-clang"
+ar = "x86_64-apple-darwin20.4-ar"
 [workspace]
 members = [
-  "sys/"
+  "./sys/"
 ]

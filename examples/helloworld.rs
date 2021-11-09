@@ -27,17 +27,15 @@ fn update_platform_handle(pd: &mut PlatformData, window: &Window) {
     }
 }
 
-#[cfg(target_os = "linux")]
 fn get_render_type() -> RendererType {
-    RendererType::OpenGL
+    #[cfg(target_os = "linux")]
+    return RendererType::Vulkan;
+    #[cfg(not(target_os = "linux"))]
+    return RenderType::Count;
 }
 
-#[cfg(not(target_os = "linux"))]
-fn get_render_type() -> RendererType {
-    RenderType::Count
-}
 
-fn main() {
+pub fn main() -> std::io::Result<()>  {
     let mut glfw = glfw::init(glfw::FAIL_ON_ERRORS).unwrap();
 
     let (mut window, events) = glfw
@@ -115,4 +113,6 @@ fn main() {
     }
 
     bgfx::shutdown();
+
+    Ok(())
 }

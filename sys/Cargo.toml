@@ -19,22 +19,15 @@ exclude = [
     "bgfx/tools",
 ]
 
+[lib]
+crate_type = [ "rlib" ]
+
 [badges]
 maintenance = {status = "actively-developed"}
 
-[dev-dependencies]
-glfw = "0.41"
-raw-window-handle = "0.3"
-glam = "0.15"
-
 [build-dependencies]
 bindgen = "0.59.1"
-cc = "*"
-[dependencies]
-
-# [features]
-# bgfx-debug = []
 
 [target.x86_64-apple-darwin]
-linker = "o64-clang"
+linker = "x86_64-apple-darwin20.4-ld"
 ar = "x86_64-apple-darwin20.4-ar"
