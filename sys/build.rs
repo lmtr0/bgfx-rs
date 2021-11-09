@@ -32,18 +32,6 @@ fn main() {
             .allowlist_type("BGFX.*")
             .allowlist_var("bgfx.*")
             .allowlist_var("BGFX.*")
-            // .allowlist_var("__va_list_tag")
-            // .blocklist_item("int_.*")
-            // .blocklist_item("uint_.*")
-            // .blocklist_item("__gnu_va_list")
-            // // .blocklist_item("__.*")
-            // .blocklist_item("intmax_t")
-            // .blocklist_item("uintmax_t")
-            // .blocklist_item("wchar_t")
-            // .blocklist_item("_Float32")
-            // .blocklist_item("_Float64")
-            // .blocklist_item("_Float32x")
-            // .blocklist_item("_Float64x")
             
             .header("src/header.h")
             .allowlist_recursively(true)
@@ -57,10 +45,6 @@ fn main() {
 
     
     //? Generate
-    // defaults to /opt/osxcross
-    if std::env::var("OSXCROSS").is_err() {
-        std::env::set_var("OSXCROSS", "/opt/osx")
-    }
 
     let makefile_target;
     // Copy toolchain.lua file to bx/scripts/toolchain.lua

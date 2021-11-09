@@ -12,3 +12,7 @@ This project follows semantic versioning.
 
 - [changed] Updated bgfx/bimg/bx to latest git version
 - [changed] Build Vulkan for Linux and Windows (OpenGL still default on Linux)
+
+### v0.4.1 (2021-11-09)
+- [changed] Updated library sys to the latest version
+- [changed] Added sources to the same directory and git repository
