@@ -60,7 +60,7 @@ pub fn main() -> std::io::Result<()>  {
     init.type_r = get_render_type();
     init.resolution.width = WIDTH as u32;
     init.resolution.height = HEIGHT as u32;
-    init.resolution.reset = ResetFlags::VSYNC.bits();
+    init.resolution.reset = ResetFlags::NONE.bits();
     init.platform_data = pd;
 
     if !bgfx::init(&init) {

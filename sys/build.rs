@@ -22,6 +22,14 @@ fn main() {
 
     let curdir = current_dir().unwrap().as_path().display().to_string();
     
+    //? Generate
+
+    let makefile_target;
+    // Copy toolchain.lua file to bx/scripts/toolchain.lua
+    if !Path::new("bgfx").exists() {
+        Command::new("sh").arg(format!("{}/update.sh", &curdir)).current_dir(&curdir).spawn().expect("Failed to update sources").wait().expect("Failed to copy toolchain");
+    }
+
     //? generate ffi
     if isunix {
         let bindings = bindgen::builder()
@@ -43,14 +51,6 @@ fn main() {
             .expect("Couldn't write bindings!");
     }
 
-    
-    //? Generate
-
-    let makefile_target;
-    // Copy toolchain.lua file to bx/scripts/toolchain.lua
-    if !Path::new("bgfx").exists() {
-        Command::new("sh").arg(format!("{}/update.sh", &curdir)).current_dir(&curdir).spawn().expect("Failed to update sources").wait().expect("Failed to copy toolchain");
-    }
 
     // copy the newers toolchain to the build direcoty
     Command::new("cp")

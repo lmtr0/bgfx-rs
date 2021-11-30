@@ -18,6 +18,7 @@ fn get_platform_data(window: &Window) -> PlatformData {
             target_os = "openbsd"
         ))]
         RawWindowHandle::Xlib(data) => {
+            println!("x11");
             pd.nwh = data.window as *mut c_void;
             pd.ndt = data.display as *mut c_void;
         }
@@ -29,6 +30,7 @@ fn get_platform_data(window: &Window) -> PlatformData {
             target_os = "openbsd"
         ))]
         RawWindowHandle::Wayland(data) => {
+            println!("wayland");
             pd.ndt = data.surface; // same as window, on wayland there ins't a concept of windows
             pd.nwh = data.display;
         }
