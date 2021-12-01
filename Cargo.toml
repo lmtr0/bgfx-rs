@@ -30,9 +30,6 @@ glfw = "*"
 glam = "*"
 raw-window-handle = "*"
 
-[target.x86_64-apple-darwin]
-linker = "o64-clang"
-ar = "x86_64-apple-darwin20.4-ar"
 [workspace]
 members = [
   "./sys/"
