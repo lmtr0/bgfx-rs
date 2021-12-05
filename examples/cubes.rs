@@ -227,7 +227,7 @@ pub fn main() -> std::io::Result<()> {
                     let yr = t + (yy as f32) * 0.37;
 
                     let rot = Mat4::from_euler(EulerRot::XYZ, xr, yr, 0.0);
-                    let transform = Mat4::from_translation(Vec3::new(x, y, 0.0)) * rot;
+                    let transform = Mat4::from_translation(Vec3::new(x*2.0, y, 0.0)) * rot;
 
                     bgfx::set_transform(&transform.to_cols_array(), 1);
                     bgfx::set_vertex_buffer(0, &vbh, 0, std::u32::MAX);

@@ -27,7 +27,3 @@ maintenance = {status = "actively-developed"}
 
 [build-dependencies]
 bindgen = "0.59.1"
-
-[target.x86_64-apple-darwin]
-linker = "x86_64-apple-darwin20.4-ld"
-ar = "x86_64-apple-darwin20.4-ar"

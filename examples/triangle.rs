@@ -1,10 +1,31 @@
-use bgfx::*;
+use bgfx_rs::{FrameBuffer, create_vertex_buffer};
 use bgfx_rs::bgfx;
+use bgfx::*;
 use core::ffi::c_void;
 use glfw::{Action, Key, Window};
 use raw_window_handle::{HasRawWindowHandle, RawWindowHandle};
 
-mod triangle;
+#[repr(packed)]
+struct PosColorVertex {
+    _x: f32,
+    _y: f32,
+    _z: f32,
+    _abgr: u32,
+}
+
+static VERTICES: [PosColorVertex; 3] = [
+    PosColorVertex { _x: -0.5, _y: -0.5, _z:  1.0, _abgr: 0xff000000 },
+    PosColorVertex { _x:  0.0, _y:  0.5, _z:  1.0, _abgr: 0xff0000ff },
+    PosColorVertex { _x:  0.5, _y: -0.5, _z:  1.0, _abgr: 0xff00ff00 },
+];
+
+
+pub fn render(framebuffer: FrameBuffer) {
+
+
+    // create_vertex_buffer(positions , layout, flags)
+}
+
 
 fn get_platform_data(window: &Window) -> PlatformData {
     let mut pd = PlatformData::new();
@@ -61,25 +82,15 @@ fn main() {
         .create_window(1080 as _, 900 as _, "Window 1", glfw::WindowMode::Windowed)
         .expect("Failed to create GLFW window.");
 
-    let (mut window2, _events2) = glfw
-        .create_window(1080 as _, 900 as _, "Window 2", glfw::WindowMode::Windowed)
-        .expect("Failed to create GLFW window.");
-
     window.set_pos(200, 200);
     window.set_size_polling(true);
-
-    window2.set_pos(1080 + 300, 200);
-    window2.set_size_polling(true);
 
     window.focus();
 
     window.set_key_polling(true);
-    window2.set_key_polling(true);
 
     let mut init = Init::new();
     init.type_r = get_render_type();
-    // init.resolution.height = 0;
-    // init.resolution.width = 0;
     init.resolution.reset = ResetFlags::NONE.bits(); // this makes the window recreation smoth
     init.platform_data = get_platform_data(&window);
 
@@ -87,62 +98,56 @@ fn main() {
         panic!("failed to init bgfx");
     }
 
-    let windows = [window, window2];
-    let mut framebuffers = [None, None];
-    let mut frame_sizes = [(0, 0), (0, 0)];
-
     let mut should_close = false;
+
+    let mut size = window.get_size();
+    let mut framebuff = create_frame_buffer_from_nwh(
+        get_platform_data(&window).nwh as *mut c_void,
+        size.0 as u16,
+        size.1 as u16,
+        CreateFrameBufferFromNwhArgs::default()
+    );
+
     while !should_close {
         glfw.wait_events();
         for (_, event) in glfw::flush_messages(&events) {
             if let glfw::WindowEvent::Key(Key::Escape, _, Action::Press, _) = event {
                 should_close = true;
             }
+
+            if let glfw::WindowEvent::Size(width, height) = event {
+                framebuff = create_frame_buffer_from_nwh(
+                    get_platform_data(&window).nwh as *mut c_void,
+                    width as u16,
+                    height as u16,
+                    CreateFrameBufferFromNwhArgs::default()
+                );
+
+                size.0 = width;
+                size.1 = height;
+
+                println!("you resized your window");
+            }
         }
 
-        for idx in 0..2 {
-            
-            let window = &windows[idx];
-            let size = window.get_framebuffer_size();
-            
-            if framebuffers[idx].is_none() || frame_sizes[idx] != size {
-                framebuffers[idx] = Some(bgfx::create_frame_buffer_from_nwh(
-                    get_platform_data(&window).nwh as *mut c_void,
-                    size.0 as u16,
-                    size.1 as u16,
-                    CreateFrameBufferFromNwhArgs::default(),
-                ));
-                
-                frame_sizes[idx] = size;
-            }
-            
-            if let Some(frame_buffer) = &framebuffers[idx] {
-                bgfx::set_view_frame_buffer(idx as _, &frame_buffer);
-            }
-            
-            bgfx::touch(idx as _);
-            let color = if idx & 1 == 0 { 0x103030ff } else { 0x755413ff };
-            
-            bgfx::set_view_rect(idx as _, 0, 0, size.0 as _, size.1 as _);
-            bgfx::set_view_clear(
-                idx as _,
-                ClearFlags::COLOR.bits() | ClearFlags::DEPTH.bits(),
-                SetViewClearArgs {
-                    rgba: color,
-                    depth: 1.0,
-                    stencil: 0,
-                },
-            );
-        }
+        bgfx::set_view_frame_buffer(0, &framebuff);
         
+        bgfx::touch(0 as _);
+        let color = if 0 & 1 == 0 { 0x103030ff } else { 0x755413ff };
+        
+        bgfx::set_view_rect(0 as _, 0, 0, size.0 as _, size.1 as _);
+        bgfx::set_view_clear(
+            0 as _,
+            ClearFlags::COLOR.bits() | ClearFlags::DEPTH.bits(),
+            SetViewClearArgs {
+                rgba: color,
+                depth: 1.0,
+                stencil: 0,
+            },
+        );
+    
         bgfx::frame(false);
     } // end main loop
-
-    for frame in framebuffers {
-        if let Some(f) = frame {
-            drop(f)
-        }
-    }
 
     bgfx::shutdown();
 }
