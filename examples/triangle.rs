@@ -9,21 +9,44 @@ use raw_window_handle::{HasRawWindowHandle, RawWindowHandle};
 struct PosColorVertex {
     _x: f32,
     _y: f32,
-    _z: f32,
     _abgr: u32,
 }
 
 static VERTICES: [PosColorVertex; 3] = [
-    PosColorVertex { _x: -0.5, _y: -0.5, _z:  1.0, _abgr: 0xff000000 },
-    PosColorVertex { _x:  0.0, _y:  0.5, _z:  1.0, _abgr: 0xff0000ff },
-    PosColorVertex { _x:  0.5, _y: -0.5, _z:  1.0, _abgr: 0xff00ff00 },
+    PosColorVertex { _x: -0.5, _y: -0.5, _abgr: 0xff000000 },
+    PosColorVertex { _x:  0.0, _y:  0.5, _abgr: 0xff0000ff },
+    PosColorVertex { _x:  0.5, _y: -0.5, _abgr: 0xff00ff00 },
 ];
 
 
 pub fn render(framebuffer: FrameBuffer) {
+    let ver_ref = unsafe {Memory::reference(&VERTICES)};
+    let layout = VertexLayoutBuilder::new();
+    layout.begin(RendererType::Vulkan);
+    layout.add(Attrib::Position, 2, AttribType::Float, AddArgs::default());
+    layout.add(
+        Attrib::Color0,
+        4,
+        AttribType::Uint8,
+        AddArgs {
+            normalized: true,
+            as_int: false,
+        },
+    );
+    layout.end();
 
+    let vbh = bgfx::create_vertex_buffer(&ver_ref, &layout, BufferFlags::NONE.bits());
+    let state = (StateWriteFlags::R
+        | StateWriteFlags::G
+        | StateWriteFlags::B
+        | StateWriteFlags::A
+        | StateWriteFlags::Z)
+        .bits()
+        | StateDepthTestFlags::LESS.bits()
+        | StateCullFlags::CW.bits();
 
-    // create_vertex_buffer(positions , layout, flags)
+    bgfx::set_vertex_buffer(0, &vbh, 0, std::u32::MAX);
+    bgfx::set_state(state, 0);
 }
 
 
