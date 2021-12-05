@@ -2,6 +2,7 @@ use bgfx_rs::{FrameBuffer, create_vertex_buffer};
 use bgfx_rs::bgfx;
 use bgfx::*;
 use core::ffi::c_void;
+use std::path::{PathBuf, Path};
 use glfw::{Action, Key, Window};
 use raw_window_handle::{HasRawWindowHandle, RawWindowHandle};
 
@@ -19,7 +20,7 @@ static VERTICES: [PosColorVertex; 3] = [
 ];
 
 
-pub fn render(framebuffer: FrameBuffer) {
+fn render_triangle() {
     let ver_ref = unsafe {Memory::reference(&VERTICES)};
     let layout = VertexLayoutBuilder::new();
     layout.begin(RendererType::Vulkan);
@@ -49,6 +50,40 @@ pub fn render(framebuffer: FrameBuffer) {
     bgfx::set_state(state, 0);
 }
 
+
+fn load_shader_file(name: &str) -> std::io::Result<Vec<u8>> {
+    let mut path = Path::new("resources/");
+
+    // match bgfx::get_renderer_type() {
+    //     RendererType::Direct3D11 => path.push("dx11"),
+    //     RendererType::OpenGL => path.push("glsl"),
+    //     RendererType::Metal => path.push("metal"),
+    //     RendererType::OpenGLES => path.push("essl"),
+    //     RendererType::Vulkan => path.push("spirv"),
+    //     e => panic!("Unsupported render type {:#?}", e),
+    // }
+
+    let path = path.join(format!("{}.bin", name));
+
+    let mut data = std::fs::read(path)?;
+    data.push(0); // this is to terminate the data
+    Ok(data)
+}
+
+
+// load shaders and create shader program
+fn load_shader_program(vs: &str, ps: &str) -> std::io::Result<Program> {
+    let vs_data = load_shader_file(vs)?;
+    let ps_data = load_shader_file(ps)?;
+
+    let vs_data = Memory::copy(&vs_data);
+    let ps_data = Memory::copy(&ps_data);
+
+    let vs_shader = bgfx::create_shader(&vs_data);
+    let ps_shader = bgfx::create_shader(&ps_data);
+
+    Ok(bgfx::create_program(&vs_shader, &ps_shader, false))
+}
 
 fn get_platform_data(window: &Window) -> PlatformData {
     let mut pd = PlatformData::new();
@@ -168,9 +203,13 @@ fn main() {
                 stencil: 0,
             },
         );
+
+        render_triangle();
     
-        bgfx::frame(false);
+        bgfx::frame(true);
     } // end main loop
+
+    drop(framebuff);
 
     bgfx::shutdown();
 }
