@@ -52,19 +52,18 @@ fn render_triangle() {
 
 
 fn load_shader_file(name: &str) -> std::io::Result<Vec<u8>> {
-    let mut path = Path::new("resources/");
+    
 
-    // match bgfx::get_renderer_type() {
-    //     RendererType::Direct3D11 => path.push("dx11"),
-    //     RendererType::OpenGL => path.push("glsl"),
-    //     RendererType::Metal => path.push("metal"),
-    //     RendererType::OpenGLES => path.push("essl"),
-    //     RendererType::Vulkan => path.push("spirv"),
-    //     e => panic!("Unsupported render type {:#?}", e),
-    // }
+    let ext = match bgfx::get_renderer_type() {
+        // RendererType::Direct3D11 => path.push("dx11"),
+        RendererType::OpenGL => "glsl",
+        RendererType::Metal => "metal",
+        // RendererType::OpenGLES => path.push("essl"),
+        RendererType::Vulkan => "spirv",
+        e => panic!("Unsupported render type {:#?}", e),
+    };
 
-    let path = path.join(format!("{}.bin", name));
-
+    let path = format!("resources/{}.{}", name, ext);
     let mut data = std::fs::read(path)?;
     data.push(0); // this is to terminate the data
     Ok(data)

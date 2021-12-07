@@ -1,8 +1,13 @@
-$output color
-// uniform vec4 color;s
-// #include "../sys/bgfx/src/bgfx_shader.sh"
+$input color
+
+/*
+ * Copyright 2011-2021 Branimir Karadzic. All rights reserved.
+ * License: https://github.com/bkaradzic/bgfx#license-bsd-2-clause
+ */
+
+#include "../sys/bgfx/src/bgfx_shader.sh"
 
 void main()
 {
-	color = vec4(1.0,1.0,1.0,1.0);
+	gl_FragColor = color;
 }

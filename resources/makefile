@@ -10,3 +10,6 @@ all:
 
 	${SHADERC} -f vs_triangle.sc 	-p metal 	--type v	-o vs_triangle.metal
 	${SHADERC} -f fs_triangle.sc 	-p metal 	--type f	-o fs_triangle.metal
+
+	${SHADERC} -f vs_triangle.sc 	-p metal 	--type v	-o vs_triangle.dx
+	${SHADERC} -f fs_triangle.sc 	-p metal 	--type f	-o fs_triangle.dx
