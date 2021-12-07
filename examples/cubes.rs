@@ -129,7 +129,6 @@ pub fn main() -> std::io::Result<()> {
 
     bgfx::set_platform_data(&pd);
 
-    // TODO: run ctor inside new
     let mut init = Init::new();
 
     init.type_r = get_render_type();

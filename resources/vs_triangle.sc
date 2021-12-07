@@ -1,10 +1,9 @@
-$input a_position
-
-// vertex shader
-// #include "../sys/bgfx/src/bgfx_shader.sh"
+$input a_position, a_color0
+$output v_color0
 
 
-void main() {
+void main()
+{
     gl_Position = a_position;
-    // gl_Color = a_color0
+    color = a_color0;
 }
