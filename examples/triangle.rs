@@ -20,7 +20,7 @@ static VERTICES: [PosColorVertex; 3] = [
 ];
 
 
-fn render_triangle() {
+fn render_triangle(triangles_shader: &Program, state: u64) {
     let ver_ref = unsafe {Memory::reference(&VERTICES)};
     let layout = VertexLayoutBuilder::new();
     layout.begin(RendererType::Vulkan);
@@ -37,17 +37,13 @@ fn render_triangle() {
     layout.end();
 
     let vbh = bgfx::create_vertex_buffer(&ver_ref, &layout, BufferFlags::NONE.bits());
-    let state = (StateWriteFlags::R
-        | StateWriteFlags::G
-        | StateWriteFlags::B
-        | StateWriteFlags::A
-        | StateWriteFlags::Z)
-        .bits()
-        | StateDepthTestFlags::LESS.bits()
-        | StateCullFlags::CW.bits();
+    
 
     bgfx::set_vertex_buffer(0, &vbh, 0, std::u32::MAX);
     bgfx::set_state(state, 0);
+
+    bgfx::submit(0, triangles_shader, SubmitArgs::default());
+
 }
 
 
@@ -165,6 +161,16 @@ fn main() {
         CreateFrameBufferFromNwhArgs::default()
     );
 
+    let shader_program = load_shader_program("vs_triangles", "fs_triangles").unwrap();
+    let state = (StateWriteFlags::R
+        | StateWriteFlags::G
+        | StateWriteFlags::B
+        | StateWriteFlags::A
+        | StateWriteFlags::Z)
+        .bits()
+        | StateDepthTestFlags::LESS.bits()
+        | StateCullFlags::CW.bits();
+
     while !should_close {
         glfw.wait_events();
         for (_, event) in glfw::flush_messages(&events) {
@@ -203,7 +209,7 @@ fn main() {
             },
         );
 
-        render_triangle();
+        render_triangle(&shader_program, state);
     
         bgfx::frame(true);
     } // end main loop
