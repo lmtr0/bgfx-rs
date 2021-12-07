@@ -1,9 +1,8 @@
-use bgfx_rs::{FrameBuffer, create_vertex_buffer};
 use bgfx_rs::bgfx;
 use bgfx::*;
 use core::ffi::c_void;
 use std::path::{PathBuf, Path};
-use glfw::{Action, Key, Window};
+use glfw::{Action, Key, Window, WindowHint};
 use raw_window_handle::{HasRawWindowHandle, RawWindowHandle};
 
 #[repr(packed)]
@@ -25,15 +24,10 @@ fn render_triangle(triangles_shader: &Program, state: u64) {
     let layout = VertexLayoutBuilder::new();
     layout.begin(RendererType::Vulkan);
     layout.add(Attrib::Position, 2, AttribType::Float, AddArgs::default());
-    layout.add(
-        Attrib::Color0,
-        4,
-        AttribType::Uint8,
-        AddArgs {
+    layout.add(Attrib::Color0, 3, AttribType::Uint8, AddArgs {
             normalized: true,
             as_int: false,
-        },
-    );
+    });
     layout.end();
 
     let vbh = bgfx::create_vertex_buffer(&ver_ref, &layout, BufferFlags::NONE.bits());
@@ -48,11 +42,9 @@ fn render_triangle(triangles_shader: &Program, state: u64) {
 
 
 fn load_shader_file(name: &str) -> std::io::Result<Vec<u8>> {
-    
-
     let ext = match bgfx::get_renderer_type() {
         // RendererType::Direct3D11 => path.push("dx11"),
-        RendererType::OpenGL => "glsl",
+        RendererType::OpenGL => "opengl",
         RendererType::Metal => "metal",
         // RendererType::OpenGLES => path.push("essl"),
         RendererType::Vulkan => "spirv",
@@ -60,6 +52,7 @@ fn load_shader_file(name: &str) -> std::io::Result<Vec<u8>> {
     };
 
     let path = format!("resources/{}.{}", name, ext);
+    println!("Loading Shader: {}", path);
     let mut data = std::fs::read(path)?;
     data.push(0); // this is to terminate the data
     Ok(data)
@@ -128,9 +121,12 @@ fn get_render_type() -> RendererType {
     return RendererType::Metal;
 }
 
+#[allow(unused)]
 fn main() {
     let mut glfw = glfw::init(glfw::FAIL_ON_ERRORS).expect("Error initializing library");
 
+    // glfw.window_hint(WindowHint::Decorated(false));
+    glfw.window_hint(WindowHint::Floating(true));
     let (mut window, events) = glfw
         .create_window(1080 as _, 900 as _, "Window 1", glfw::WindowMode::Windowed)
         .expect("Failed to create GLFW window.");
@@ -161,7 +157,7 @@ fn main() {
         CreateFrameBufferFromNwhArgs::default()
     );
 
-    let shader_program = load_shader_program("vs_triangles", "fs_triangles").unwrap();
+    let shader_program = load_shader_program("vs_triangle", "fs_triangle").unwrap();
     let state = (StateWriteFlags::R
         | StateWriteFlags::G
         | StateWriteFlags::B
@@ -171,6 +167,7 @@ fn main() {
         | StateDepthTestFlags::LESS.bits()
         | StateCullFlags::CW.bits();
 
+    window.request_attention();
     while !should_close {
         glfw.wait_events();
         for (_, event) in glfw::flush_messages(&events) {

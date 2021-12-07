@@ -1,4 +1,4 @@
-$input a_position, a_color0
+$input a_position
 
 // vertex shader
 // #include "../sys/bgfx/src/bgfx_shader.sh"
