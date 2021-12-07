@@ -1,3 +1,12 @@
+SHADERC?=../sys/bgfx/.build/linux64_gcc/bin/shadercRelease
+
 all:
-	../sys/bgfx/.build/linux64_gcc/bin/shadercRelease -f vs_triangle.sc -o vs_triangle.bin -p spirv --type vertex
-	../sys/bgfx/.build/linux64_gcc/bin/shadercRelease -f fs_triangle.sc -o fs_triangle.bin -p spirv --type fragment
+	${SHADERC} -f vs_triangle.sc 	-p 440 		--type v	-o vs_triangle.opengl
+	${SHADERC} -f fs_triangle.sc 	-p 440 		--type f	-o fs_triangle.opengl
+
+	${SHADERC} -f vs_triangle.sc 	-p spirv 	--type v	-o vs_triangle.spirv
+	${SHADERC} -f fs_triangle.sc 	-p spirv 	--type f	-o fs_triangle.spirv
+
+
+	${SHADERC} -f vs_triangle.sc 	-p metal 	--type v	-o vs_triangle.metal
+	${SHADERC} -f fs_triangle.sc 	-p metal 	--type f	-o fs_triangle.metal

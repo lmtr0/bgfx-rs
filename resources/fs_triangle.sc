@@ -1,7 +1,8 @@
-$input v_color0
-// fragment shader
+$output color
+// uniform vec4 color;s
+// #include "../sys/bgfx/src/bgfx_shader.sh"
 
 void main()
 {
-	gl_FragColor = vec4(1.0, 0.5, 0.5, 1.0);	
+	color = vec4(1.0,1.0,1.0,1.0);
 }
