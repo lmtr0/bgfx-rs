@@ -1,10 +1,9 @@
 use bgfx::*;
 use bgfx_rs::bgfx;
 use core::ffi::c_void;
-use glfw::{Action, Key, Window};
+use glfw::{Action, Key, Window, WindowHint, ClientApiHint};
 use raw_window_handle::{HasRawWindowHandle, RawWindowHandle};
 
-mod triangle;
 
 fn get_platform_data(window: &Window) -> PlatformData {
     let mut pd = PlatformData::new();
@@ -56,6 +55,8 @@ fn get_render_type() -> RendererType {
 
 fn main() {
     let mut glfw = glfw::init(glfw::FAIL_ON_ERRORS).expect("Error initializing library");
+
+    glfw.window_hint(WindowHint::ClientApi(ClientApiHint::NoApi));
 
     let (mut window, events) = glfw
         .create_window(1080 as _, 900 as _, "Window 1", glfw::WindowMode::Windowed)

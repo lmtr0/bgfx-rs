@@ -32,5 +32,6 @@ raw-window-handle = "*"
 
 [workspace]
 members = [
-  "./sys/"
+  "./sys/",
+  "./triangles",
 ]
