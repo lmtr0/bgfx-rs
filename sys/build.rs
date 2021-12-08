@@ -51,8 +51,8 @@ fn main() {
     build.define("BIMG_DECODE_ASTC", "0");
 
     if iswindows {
-        build.include("bx/include/compat/msvc");
-        build.include("bgfx/3rdparty/dxsdk/include");
+        build.include("bx/include/compat/mingw");
+        // build.include("bgfx/3rdparty/dxsdk/include");
 
         build.define("BGFX_CONFIG_RENDERER_VULKAN", "1");
         build.define("BGFX_CONFIG_RENDERER_DIRECT3D11", "1");
@@ -65,16 +65,18 @@ fn main() {
         build.define("__STDC_CONSTANT_MACROS", None);
         build.define("_CRT_SECURE_NO_WARNINGS", None);
         build.define("_CRT_SECURE_NO_DEPRECATE", None);
-        build.warnings(false);
+        // build.warnings(false);
     } 
     else if isdarwin {
-        build.define("BGFX_CONFIG_RENDERER_VULKAN", "1");
+        build.define("BGFX_CONFIG_RENDERER_VULKAN", "0");
         build.define("BGFX_CONFIG_RENDERER_METAL", "1");
         build.include("bx/include/compat/osx");
+        build.warnings(false);
     }
     else if isunix {
         build.define("BGFX_CONFIG_RENDERER_VULKAN", "1");
         build.define("BGFX_CONFIG_RENDERER_OPENGL", "1");
+        build.warnings(false);
     }
 
     build.define("BX_CONFIG_DEBUG", Some("0"));
