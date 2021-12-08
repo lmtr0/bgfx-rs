@@ -1,18 +1,9 @@
 use std::{env::{current_dir}, path::Path, process::Command};
 
-fn link_bgfx(searchpath: String) {
-    println!("cargo:rustc-link-search={}", searchpath);
-    println!("cargo:rustc-link-lib=bgfxRelease");
-    println!("cargo:rustc-link-lib=bimg_decodeRelease");
-    println!("cargo:rustc-link-lib=bimgRelease");
-    println!("cargo:rustc-link-lib=bxRelease");
-}
-
-
 fn main() {
     
     println!("cargo:warning=You are building bgfx, bimg and bx from the source code, this may take a while if it's the first time");
-
+    let mut build = cc::Build::new();
     let env = std::env::var("TARGET").unwrap();
 
     let isdarwin = env.contains("darwin");
@@ -23,93 +14,148 @@ fn main() {
     let curdir = current_dir().unwrap().as_path().display().to_string();
     
     //? Generate
-
-    let makefile_target;
-    // Copy toolchain.lua file to bx/scripts/toolchain.lua
     if !Path::new("bgfx").exists() {
         Command::new("sh").arg(format!("{}/update.sh", &curdir)).current_dir(&curdir).spawn().expect("Failed to update sources").wait().expect("Failed to copy toolchain");
     }
 
     //? generate ffi
-    if isunix {
-        let bindings = bindgen::builder()
-            .layout_tests(false)
-            .prepend_enum_name(false)
-            .allowlist_function("bgfx.*")
-            .allowlist_type("bgfx.*")
-            .allowlist_type("BGFX.*")
-            .allowlist_var("bgfx.*")
-            .allowlist_var("BGFX.*")
-            
-            .header("src/header.h")
-            .allowlist_recursively(true)
-            .clang_arg("-Ibx/include")
-            .generate().expect("Failed to generate bindings");
+    let bindings = bindgen::builder()
+        .layout_tests(false)
+        .prepend_enum_name(false)
+        .allowlist_function("bgfx.*")
+        .allowlist_type("bgfx.*")
+        .allowlist_type("BGFX.*")
+        .allowlist_var("bgfx.*")
+        .allowlist_var("BGFX.*")
+        
+        .header("src/header.h")
+        .allowlist_recursively(true)
+        .clang_arg("-Ibx/include")
+        .generate().expect("Failed to generate bindings");
 
-        bindings
-            .write_to_file("src/ffi.rs")
-            .expect("Couldn't write bindings!");
-    }
+    bindings
+        .write_to_file("src/ffi.rs")
+        .expect("Couldn't write bindings!");
 
 
-    // copy the newers toolchain to the build direcoty
-    Command::new("cp")
-        .arg("toolchain.lua")
-        .arg("bx/scripts/toolchain.lua")
-        .spawn().expect("Failed to copy toolchain file to directory")
-        .wait().expect("Failed to copy toolchain");
+    // ! build
+    // defines - Currently not supporting WebGPU, GNM and Vulkan
+    // OS support:
+    // Windows - DirectX and Vulkan
+    // macOS - Metal
+    // Posix - Vulkan, OpenGL
+    // In the future it would be good to make this configurable instead
 
-    let mut cmd;
-    if cfg!(windows) {
-        cmd = Command::new(format!("{}/bx/tools/bin/windows/genie.exe", &curdir));
-    }
-    else if cfg!(macos) {
-        cmd =  Command::new(format!("{}/bx/tools/bin/darwing/genie", &curdir));
-    }
-    else if cfg!(unix) {
-        cmd =  Command::new(format!("{}/bx/tools/bin/linux/genie", &curdir));
-    }
-    else {
-        panic!("Platform not supported for building");
-    }
-
-    cmd.current_dir(format!("{}/bgfx", &curdir));
-    // cmd.arg("--with-shared-lib");
+    build.define("BGFX_CONFIG_RENDERER_WEBGPU", "0");
+    build.define("BGFX_CONFIG_RENDERER_GNM", "0");
+    build.define("BIMG_DECODE_ASTC", "0");
 
     if iswindows {
-        cmd.args(["--gcc=mingw-gcc", "gmake"]);
-        makefile_target = "gmake-mingw-gcc";
-    }
+        build.include("bx/include/compat/msvc");
+        build.include("bgfx/3rdparty/dxsdk/include");
+
+        build.define("BGFX_CONFIG_RENDERER_VULKAN", "1");
+        build.define("BGFX_CONFIG_RENDERER_DIRECT3D11", "1");
+        build.define("_WIN32", None);
+        build.define("_HAS_EXCEPTIONS", "0");
+        build.define("_SCL_SECURE", "0");
+        build.define("_SECURE_SCL", "0");
+        build.define("__STDC_LIMIT_MACROS", None);
+        build.define("__STDC_FORMAT_MACROS", None);
+        build.define("__STDC_CONSTANT_MACROS", None);
+        build.define("_CRT_SECURE_NO_WARNINGS", None);
+        build.define("_CRT_SECURE_NO_DEPRECATE", None);
+        build.warnings(false);
+    } 
     else if isdarwin {
-        cmd.args(["--gcc=osx-x64", "gmake"]);
-        makefile_target = "gmake-osx-x64";
+        build.define("BGFX_CONFIG_RENDERER_VULKAN", "1");
+        build.define("BGFX_CONFIG_RENDERER_METAL", "1");
+        build.include("bx/include/compat/osx");
     }
     else if isunix {
-        cmd.args(["--gcc=linux-gcc", "gmake"]);
-        // makefile_target = "gmake-linux-clang";
-        makefile_target = "gmake-linux";
-    }
-    else {
-        panic!("Target not supported");
+        build.define("BGFX_CONFIG_RENDERER_VULKAN", "1");
+        build.define("BGFX_CONFIG_RENDERER_OPENGL", "1");
     }
 
-    println!("compiling makefile");
-    cmd.spawn().expect("Failed to start generate command").wait_with_output().expect("Failed to execute the generate command");
-    println!("Finished makefile");
+    build.define("BX_CONFIG_DEBUG", Some("0"));
 
-    //? build
-    let mut cmd = Command::new("make");
-    cmd.args([
-        "-R", 
-        "-C", format!("bgfx/.build/projects/{}", makefile_target).as_str(), 
-        "config=release64"
-    ]);
-    cmd.spawn().expect("Failed to build bgfx project").wait().expect("Failed to execute the make command to build the bgfx project");
+    
+    // bx
+    build.include("bx/include");
+    build.include("bx/3rdparty");
+    
+    // build.file("bx/src/allocator.cpp");
+    build.file("bx/src/amalgamated.cpp");
+    build.file("bx/src/bounds.cpp");
+    build.file("bx/src/commandline.cpp");
+    build.file("bx/src/crtnone.cpp");
+    build.file("bx/src/debug.cpp");
+    build.file("bx/src/dtoa.cpp");
+    build.file("bx/src/easing.cpp");
+    build.file("bx/src/file.cpp");
+    build.file("bx/src/filepath.cpp");
+    build.file("bx/src/hash.cpp");
+    build.file("bx/src/math.cpp");
+    build.file("bx/src/mutex.cpp");
+    build.file("bx/src/os.cpp");
+    build.file("bx/src/process.cpp");
+    build.file("bx/src/semaphore.cpp");
+    build.file("bx/src/settings.cpp");
+    build.file("bx/src/sort.cpp");
+    build.file("bx/src/string.cpp");
+    build.file("bx/src/thread.cpp");
+    build.file("bx/src/timer.cpp");
+    build.file("bx/src/url.cpp");
+    build.file("bx/src/bx.cpp");
 
-    // bgfx libs
+    // bimg
+    build.include("bimg/include");
+    build.include("bimg/3rdparty");
+    build.include("bimg/3rdparty/iqa/include/");
+    build.include("bimg/3rdparty/astc-codec/include");
+    build.include("bimg/3rdparty/tinyexr/deps/miniz/");
+    
+    build.file("bimg/src/image.cpp");
+    build.file("bimg/src/image_cubemap_filter.cpp");
+    build.file("bimg/src/image_decode.cpp");
+    build.file("bimg/src/image_encode.cpp");
+    build.file("bimg/src/image_gnf.cpp");
+    
+    // bgfx
+    build.include("bgfx/include");
+    build.include("bgfx/3rdparty");
+    build.include("bgfx/3rdparty/khronos/");
+    
+    build.file("bgfx/src/amalgamated.cpp");
+    build.file("bgfx/src/bgfx.cpp");
+    build.file("bgfx/src/debug_renderdoc.cpp");
+    build.file("bgfx/src/dxgi.cpp");
+    build.file("bgfx/src/glcontext_egl.cpp");
+    build.file("bgfx/src/glcontext_glx.cpp");
+    build.file("bgfx/src/glcontext_html5.cpp");
+    build.file("bgfx/src/glcontext_wgl.cpp");
+    build.file("bgfx/src/nvapi.cpp");
+    build.file("bgfx/src/renderer_agc.cpp");
+    build.file("bgfx/src/renderer_d3d11.cpp");
+    build.file("bgfx/src/renderer_d3d12.cpp");
+    build.file("bgfx/src/renderer_d3d9.cpp");
+    build.file("bgfx/src/renderer_gl.cpp");
+    build.file("bgfx/src/renderer_gnm.cpp");
+    build.file("bgfx/src/renderer_noop.cpp");
+    build.file("bgfx/src/renderer_nvn.cpp");
+    build.file("bgfx/src/renderer_vk.cpp");
+    build.file("bgfx/src/renderer_webgpu.cpp");
+    build.file("bgfx/src/shader.cpp");
+    build.file("bgfx/src/shader_dx9bc.cpp");
+    build.file("bgfx/src/shader_dxbc.cpp");
+    build.file("bgfx/src/shader_spirv.cpp");
+    build.file("bgfx/src/topology.cpp");
+    build.file("bgfx/src/vertexlayout.cpp");
+
+    build.compile("bgfx_sys");
+    // links
     if iswindows {
         println!("cargo:warning=Compiling to Windows");
-        link_bgfx(format!("{}/bgfx/.build/win64_mingw-gcc/bin", curdir));
 
         println!("cargo:rustc-link-lib=winpthread");
         println!("cargo:rustc-link-lib=stdc++");
@@ -118,7 +164,6 @@ fn main() {
     } 
     else if isdarwin {
         println!("cargo:warning=Compiling to Darwin");
-        link_bgfx(format!("{}/bgfx/.build/osx-x64/bin", curdir));  
 
         println!("cargo:rustc-link-lib=c++");
         
@@ -128,7 +173,6 @@ fn main() {
     } 
     else if isunix {
         println!("cargo:warning=Compiling to Unix (linux)");
-        link_bgfx(format!("{}/bgfx/.build/linux64_gcc/bin", curdir));  
         
         println!("cargo:rustc-link-lib=stdc++");
         println!("cargo:rustc-link-lib=GL");
