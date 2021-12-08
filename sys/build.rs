@@ -65,7 +65,7 @@ fn main() {
         build.define("__STDC_CONSTANT_MACROS", None);
         build.define("_CRT_SECURE_NO_WARNINGS", None);
         build.define("_CRT_SECURE_NO_DEPRECATE", None);
-        // build.warnings(false);
+        build.warnings(false);
     } 
     else if isdarwin {
         build.define("BGFX_CONFIG_RENDERER_VULKAN", "0");
