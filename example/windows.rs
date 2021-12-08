@@ -1,57 +1,11 @@
 use bgfx::*;
 use bgfx_rs::bgfx;
 use core::ffi::c_void;
-use glfw::{Action, Key, Window, WindowHint, ClientApiHint};
+use glfw::{Action, Key, WindowHint, ClientApiHint};
 use raw_window_handle::{HasRawWindowHandle, RawWindowHandle};
 
-
-fn get_platform_data(window: &Window) -> PlatformData {
-    let mut pd = PlatformData::new();
-
-    match window.raw_window_handle() {
-        #[cfg(any(
-            target_os = "linux",
-            target_os = "dragonfly",
-            target_os = "freebsd",
-            target_os = "netbsd",
-            target_os = "openbsd"
-        ))]
-        RawWindowHandle::Xlib(data) => {
-            pd.nwh = data.window as *mut c_void;
-            pd.ndt = data.display as *mut c_void;
-        }
-        #[cfg(any(
-            target_os = "linux",
-            target_os = "dragonfly",
-            target_os = "freebsd",
-            target_os = "netbsd",
-            target_os = "openbsd"
-        ))]
-        RawWindowHandle::Wayland(data) => {
-            pd.ndt = data.surface; // same as window, on wayland there ins't a concept of windows
-            pd.nwh = data.display;
-        }
-
-        #[cfg(target_os = "macos")]
-        RawWindowHandle::MacOS(data) => {
-            pd.nwh = data.ns_window;
-        }
-        #[cfg(target_os = "windows")]
-        RawWindowHandle::Windows(data) => {
-            pd.nwh = data.hwnd;
-        }
-        _ => panic!("Unsupported Window Manager"),
-    }
-
-    return pd;
-}
-
-fn get_render_type() -> RendererType {
-    #[cfg(any(target_os = "linux", target_os = "windows"))]
-    return RendererType::OpenGL;
-    #[cfg(target_os = "macos")]
-    return RendererType::Metal;
-}
+mod common;
+use common::{get_platform_data, get_render_type};
 
 fn main() {
     let mut glfw = glfw::init(glfw::FAIL_ON_ERRORS).expect("Error initializing library");

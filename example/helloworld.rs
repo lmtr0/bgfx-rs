@@ -1,38 +1,12 @@
 use bgfx::*;
 use bgfx_rs::bgfx;
-use glfw::{Action, Context, Key, Window};
-use raw_window_handle::{HasRawWindowHandle, RawWindowHandle};
+use glfw::{Action, Context, Key};
+
+mod common;
+use common::{get_render_type, get_platform_data};
 
 const WIDTH: usize = 1280;
 const HEIGHT: usize = 720;
-
-#[cfg(target_os = "linux")]
-fn update_platform_handle(pd: &mut PlatformData, window: &Window) {
-    match window.raw_window_handle() {
-        RawWindowHandle::Xlib(x_data) => {
-            pd.ndt = x_data.display;
-            pd.nwh = x_data.window as *mut core::ffi::c_void;
-        }
-        _ => panic!("Unsupported window type"),
-    }
-}
-
-#[cfg(target_os = "windows")]
-fn update_platform_handle(pd: &mut PlatformData, window: &Window) {
-    match window.raw_window_handle() {
-        RawWindowHandle::Windows(data) => {
-            pd.nwh = data.hwnd as *mut core::ffi::c_void;
-        }
-        _ => panic!("Unsupported window type"),
-    }
-}
-
-fn get_render_type() -> RendererType {
-    #[cfg(target_os = "linux")]
-    return RendererType::Vulkan;
-    #[cfg(not(target_os = "linux"))]
-    return RenderType::Count;
-}
 
 
 pub fn main() -> std::io::Result<()>  {
@@ -50,11 +24,7 @@ pub fn main() -> std::io::Result<()>  {
     window.set_key_polling(true);
     window.make_current();
 
-    let mut pd = bgfx::PlatformData::new();
-    update_platform_handle(&mut pd, &window);
-
-    bgfx::set_platform_data(&pd);
-
+    let pd = get_platform_data(&window);
     let mut init = Init::new();
 
     init.type_r = get_render_type();

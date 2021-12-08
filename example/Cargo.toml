@@ -1,0 +1,28 @@
+[package]
+name = "example"
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+glfw = "*"
+glam = "*"
+raw-window-handle = "*"
+bgfx-rs = { path="../" }
+
+[[bin]]
+name = "cubes"
+path = "./cubes.rs"
+
+[[bin]]
+name = "cube"
+path = "./cube.rs"
+
+[[bin]]
+name = "helloworld"
+path = "./helloworld.rs"
+
+[[bin]]
+name = "windows"
+path = "./windows.rs"

@@ -1,8 +1,10 @@
 use bgfx_rs::*;
 use glam::{EulerRot, Mat4, Vec3};
-use glfw::{Action, Context, Key, Window};
-use raw_window_handle::{HasRawWindowHandle, RawWindowHandle};
-use std::{path::PathBuf, time::Instant};
+use glfw::{Action, Context, Key};
+use std::{time::Instant};
+
+mod common;
+use common::{load_shader_program, get_render_type, get_platform_data};
 
 const WIDTH: usize = 1280;
 const HEIGHT: usize = 720;
@@ -43,71 +45,8 @@ static CUBE_INDICES: [u16; 36] = [
     6, 3, 7,
 ];
 
-#[cfg(target_os = "linux")]
-fn update_platform_handle(pd: &mut PlatformData, window: &Window) {
-    match window.raw_window_handle() {
-        RawWindowHandle::Xlib(x_data) => {
-            pd.ndt = x_data.display;
-            pd.nwh = x_data.window as *mut core::ffi::c_void;
-        }
-        _ => panic!("Unsupported window type"),
-    }
-}
 
-#[cfg(target_os = "windows")]
-fn update_platform_handle(pd: &mut PlatformData, window: &Window) {
-    match window.raw_window_handle() {
-        RawWindowHandle::Windows(data) => {
-            pd.nwh = data.hwnd as *mut core::ffi::c_void;
-        }
-        _ => panic!("Unsupported window type"),
-    }
-}
 
-fn load_shader_file(name: &str) -> std::io::Result<Vec<u8>> {
-    let mut path = PathBuf::with_capacity(512);
-    path.push("resources/examples/runtime/shaders");
-
-    match bgfx::get_renderer_type() {
-        RendererType::Direct3D11 => path.push("dx11"),
-        RendererType::OpenGL => path.push("glsl"),
-        RendererType::Metal => path.push("metal"),
-        RendererType::OpenGLES => path.push("essl"),
-        RendererType::Vulkan => path.push("spirv"),
-        e => panic!("Unsupported render type {:#?}", e),
-    }
-
-    path.push(format!("{}.bin", name));
-
-    let mut data = std::fs::read(path)?;
-    data.push(0); // this is to terminate the data
-    Ok(data)
-}
-
-// load shaders and create shader program
-fn load_shader_program(vs: &str, ps: &str) -> std::io::Result<Program> {
-    let vs_data = load_shader_file(vs)?;
-    let ps_data = load_shader_file(ps)?;
-
-    let vs_data = Memory::copy(&vs_data);
-    let ps_data = Memory::copy(&ps_data);
-
-    let vs_shader = bgfx::create_shader(&vs_data);
-    let ps_shader = bgfx::create_shader(&ps_data);
-
-    Ok(bgfx::create_program(&vs_shader, &ps_shader, false))
-}
-
-#[cfg(target_os = "linux")]
-fn get_render_type() -> RendererType {
-    //RendererType::OpenGL
-    RendererType::Vulkan
-}
-
-#[cfg(not(target_os = "linux"))]
-fn get_render_type() -> RendererType {
-    RenderType::Count
-}
 
 pub fn main() -> std::io::Result<()> {
     let mut glfw = glfw::init(glfw::FAIL_ON_ERRORS).unwrap();
@@ -124,8 +63,7 @@ pub fn main() -> std::io::Result<()> {
     window.set_key_polling(true);
     window.make_current();
 
-    let mut pd = bgfx::PlatformData::new();
-    update_platform_handle(&mut pd, &window);
+    let pd = get_platform_data(&window);
 
     bgfx::set_platform_data(&pd);
 
@@ -218,24 +156,24 @@ pub fn main() -> std::io::Result<()> {
 
             bgfx::set_view_transform(0, &view.to_cols_array(), &persp.to_cols_array());
 
-            for yy in 0..11 {
-                for xx in 0..11 {
-                    let x = -15.0 + (xx as f32) * 3.0;
-                    let y = -15.0 + (yy as f32) * 3.0;
-                    let xr = t + (xx as f32) * 0.21;
-                    let yr = t + (yy as f32) * 0.37;
+            let xx = 5;
+            let yy = 5;
 
-                    let rot = Mat4::from_euler(EulerRot::XYZ, xr, yr, 0.0);
-                    let transform = Mat4::from_translation(Vec3::new(x*2.0, y, 0.0)) * rot;
+            let x = -15.0 + (xx as f32) * 3.0;
+            let y = -15.0 + (yy as f32) * 3.0;
+            let xr = t + (xx as f32) * 0.21;
+            let yr = t + (yy as f32) * 0.37;
 
-                    bgfx::set_transform(&transform.to_cols_array(), 1);
-                    bgfx::set_vertex_buffer(0, &vbh, 0, std::u32::MAX);
-                    bgfx::set_index_buffer(&ibh, 0, std::u32::MAX);
 
-                    bgfx::set_state(state, 0);
-                    bgfx::submit(0, &shader_program, SubmitArgs::default());
-                }
-            }
+            let rot = Mat4::from_euler(EulerRot::XYZ, xr, yr, 0.0);
+            let transform = Mat4::from_translation(Vec3::new(x*2.0, y, 0.0)) * rot;
+
+            bgfx::set_transform(&transform.to_cols_array(), 1);
+            bgfx::set_vertex_buffer(0, &vbh, 0, std::u32::MAX);
+            bgfx::set_index_buffer(&ibh, 0, std::u32::MAX);
+
+            bgfx::set_state(state, 0);
+            bgfx::submit(0, &shader_program, SubmitArgs::default());
 
             bgfx::frame(false);
         }
