@@ -2,8 +2,6 @@ use bgfx::*;
 use bgfx_rs::bgfx;
 use core::ffi::c_void;
 use glfw::{Action, Key, WindowHint, ClientApiHint};
-use raw_window_handle::{HasRawWindowHandle, RawWindowHandle};
-
 mod common;
 use common::{get_platform_data, get_render_type};
 

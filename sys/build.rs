@@ -49,6 +49,8 @@ fn main() {
     build.define("BGFX_CONFIG_RENDERER_WEBGPU", "0");
     build.define("BGFX_CONFIG_RENDERER_GNM", "0");
     build.define("BIMG_DECODE_ASTC", "0");
+    build.define("BGFX_CONFIG_MULTITHREADED", "1");
+    build.define("BX_CONFIG_DEBUG", "0");
 
     if iswindows {
         build.include("bx/include/compat/mingw");
@@ -79,7 +81,6 @@ fn main() {
         build.warnings(false);
     }
 
-    build.define("BX_CONFIG_DEBUG", Some("0"));
 
     
     // bx
