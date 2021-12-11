@@ -4,7 +4,7 @@ use glfw::{Action, Context, Key};
 use std::{time::Instant};
 
 mod common;
-use common::{load_shader_program, get_render_type, get_platform_data};
+use common::{get_render_type, get_platform_data};
 
 const WIDTH: usize = 1280;
 const HEIGHT: usize = 720;
@@ -18,12 +18,47 @@ struct PosColorVertex {
 }
 
 #[rustfmt::skip]
-static TRIANGLE_VERTICES: [f32; 6] = [
-    -0.5f, -0.5f,
-    0.0f,  0.5f,
-    0.5f, -0.5f
+static TRIANGLE_VERTICES: [PosColorVertex; 4] = [
+    PosColorVertex { _y: -1.0,  _x: -1.0, _z: 0.0, _abgr: 0xffffffff }, // 0
+    PosColorVertex { _y:  1.0,  _x: -1.0, _z: 0.0, _abgr: 0xffffffff }, // 1
+    PosColorVertex { _y:  1.0,  _x:  1.0, _z: 0.0, _abgr: 0xffffffff }, // 2
+    PosColorVertex { _y: -1.0,  _x:  1.0, _z: 0.0, _abgr: 0xffffffff }, // 3
 ];
 
+
+static TRIANGLE_INDICES: [i32; 6] = [
+    0, 1, 2,
+    2, 3, 0
+];
+pub fn load_shader_file(name: &str) -> std::io::Result<Vec<u8>> {
+
+    let ext = match bgfx::get_renderer_type() {
+        // RendererType::Direct3D11 => path.push("d11"),
+        RendererType::OpenGL => "gl",
+        // RendererType::Metal => path.push("mt"),
+        // RendererType::OpenGLES => path.push("el"),
+        RendererType::Vulkan => "vk",
+        e => panic!("Unsupported render type {:#?}", e),
+    };
+
+    let mut data = std::fs::read(format!("../resources/{}.{}", name, ext))?;
+    data.push(0); // this is to terminate the data
+    Ok(data)
+}
+
+// load shaders and create shader program
+pub fn load_shader_program(vs: &str, ps: &str) -> std::io::Result<Program> {
+    let vs_data = load_shader_file(vs)?;
+    let ps_data = load_shader_file(ps)?;
+
+    let vs_data = Memory::copy(&vs_data);
+    let ps_data = Memory::copy(&ps_data);
+
+    let vs_shader = bgfx::create_shader(&vs_data);
+    let ps_shader = bgfx::create_shader(&ps_data);
+
+    Ok(bgfx::create_program(&vs_shader, &ps_shader, false))
+}
 
 
 
@@ -40,11 +75,7 @@ pub fn main() -> std::io::Result<()> {
         .expect("Failed to create GLFW window.");
 
     window.set_key_polling(true);
-    window.make_current();
 
-    let pd = get_platform_data(&window);
-
-    bgfx::set_platform_data(&pd);
 
     let mut init = Init::new();
 
@@ -52,7 +83,7 @@ pub fn main() -> std::io::Result<()> {
     init.resolution.width = WIDTH as u32;
     init.resolution.height = HEIGHT as u32;
     init.resolution.reset = ResetFlags::NONE.bits();
-    init.platform_data = pd;
+    init.platform_data = get_platform_data(&window);
 
     if !bgfx::init(&init) {
         panic!("failed to init bgfx");
@@ -83,13 +114,13 @@ pub fn main() -> std::io::Result<()> {
         );
         layout.end();
 
-        let verts_mem = unsafe { Memory::reference(&CUBE_VERTICES) };
-        let index_mem = unsafe { Memory::reference(&CUBE_INDICES) };
+        let verts_mem = unsafe { Memory::reference(&TRIANGLE_VERTICES) };
+        let index_mem = unsafe { Memory::reference(&TRIANGLE_INDICES) };
 
         let vbh = bgfx::create_vertex_buffer(&verts_mem, &layout, BufferFlags::NONE.bits());
-        let ibh = bgfx::create_index_buffer(&index_mem, BufferFlags::NONE.bits());
+        let ibh =  bgfx::create_index_buffer(&index_mem, BufferFlags::NONE.bits());
 
-        let shader_program = load_shader_program("vs_cubes", "fs_cubes")?;
+        let shader_program = load_shader_program("vs_triangle", "fs_triangle")?;
 
         let state = (StateWriteFlags::R
             | StateWriteFlags::G
@@ -101,7 +132,7 @@ pub fn main() -> std::io::Result<()> {
             | StateCullFlags::CW.bits();
 
         let at = Vec3::new(0.0, 0.0, 0.0);
-        let eye = Vec3::new(0.0, 0.0, -35.0);
+        let eye = Vec3::new(0.0, 0.0, -5.0);
         let up = Vec3::new(0.0, 1.0, 0.0);
 
         let time = Instant::now();
@@ -116,7 +147,7 @@ pub fn main() -> std::io::Result<()> {
                 }
             }
 
-            let t = time.elapsed().as_secs_f32();
+            // let t = time.elapsed().as_secs_f32();
             let size = window.get_framebuffer_size();
 
             if old_size != size {
@@ -126,29 +157,25 @@ pub fn main() -> std::io::Result<()> {
 
             let aspect = size.0 as f32 / size.1 as f32;
 
-            let persp =
-                Mat4::perspective_lh(60.0 * (std::f32::consts::PI / 180.0), aspect, 0.1, 100.0);
-            let view = Mat4::look_at_lh(eye, at, up);
+            let proj_mtx = Mat4::perspective_lh(60.0 * (std::f32::consts::PI / 180.0), aspect, 0.1, 100.0);
+            let view_mtx = Mat4::look_at_lh(eye, at, up);
 
             bgfx::set_view_rect(0, 0, 0, size.0 as _, size.1 as _);
             bgfx::touch(0);
 
-            bgfx::set_view_transform(0, &view.to_cols_array(), &persp.to_cols_array());
+            bgfx::set_view_transform(0, &view_mtx.to_cols_array(), &proj_mtx.to_cols_array());
 
-            let xx = 5;
-            let yy = 5;
-
-            let x = -15.0 + (xx as f32) * 3.0;
-            let y = -15.0 + (yy as f32) * 3.0;
-            let xr = t + (xx as f32) * 0.21;
-            let yr = t + (yy as f32) * 0.37;
+            // let x = 1.0;
+            // let y = 1.0;
+            // let xrotation = t + (xx as f32) * 0.21;
+            // let yrotation = t + (yy as f32) * 0.37;
 
 
-            let rot = Mat4::from_euler(EulerRot::XYZ, xr, yr, 0.0);
-            let transform = Mat4::from_translation(Vec3::new(x*2.0, y, 0.0)) * rot;
+            // let rotation = Mat4::from_euler(EulerRot::XYZ, xr, yr, 0.0);
+            // let transform = Mat4::from_translation(Vec3::new(x*2.0, y, 0.0));
 
-            bgfx::set_transform(&transform.to_cols_array(), 1);
-            bgfx::set_vertex_buffer(0, &vbh, 0, std::u32::MAX);
+            // bgfx::set_transform(&transform.to_cols_array(), 1);
+            bgfx::set_vertex_buffer(0, &vbh, 0, TRIANGLE_VERTICES.len() as u32);
             bgfx::set_index_buffer(&ibh, 0, std::u32::MAX);
 
             bgfx::set_state(state, 0);
