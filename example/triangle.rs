@@ -135,8 +135,6 @@ pub fn main() -> std::io::Result<()> {
         let eye = Vec3::new(0.0, 0.0, -5.0);
         let up = Vec3::new(0.0, 1.0, 0.0);
 
-        let time = Instant::now();
-
         let mut old_size = (0, 0);
 
         while !window.should_close() {
@@ -147,7 +145,6 @@ pub fn main() -> std::io::Result<()> {
                 }
             }
 
-            // let t = time.elapsed().as_secs_f32();
             let size = window.get_framebuffer_size();
 
             if old_size != size {
@@ -165,16 +162,22 @@ pub fn main() -> std::io::Result<()> {
 
             bgfx::set_view_transform(0, &view_mtx.to_cols_array(), &proj_mtx.to_cols_array());
 
-            // let x = 1.0;
-            // let y = 1.0;
-            // let xrotation = t + (xx as f32) * 0.21;
-            // let yrotation = t + (yy as f32) * 0.37;
+            let x = -2.0;
+            let y = 0.0;
+            let transform = Mat4::from_translation(Vec3::new(x, y, 0.0));
+            
+            bgfx::set_transform(&transform.to_cols_array(), 1);
+            bgfx::set_vertex_buffer(0, &vbh, 0, TRIANGLE_VERTICES.len() as u32);
+            bgfx::set_index_buffer(&ibh, 0, std::u32::MAX);
 
-
-            // let rotation = Mat4::from_euler(EulerRot::XYZ, xr, yr, 0.0);
-            // let transform = Mat4::from_translation(Vec3::new(x*2.0, y, 0.0));
-
-            // bgfx::set_transform(&transform.to_cols_array(), 1);
+            bgfx::set_state(state, 0);
+            bgfx::submit(0, &shader_program, SubmitArgs::default());
+            
+            let x = 2.0;
+            let y = 0.0;
+            let transform = Mat4::from_translation(Vec3::new(x, y, 0.0));
+            
+            bgfx::set_transform(&transform.to_cols_array(), 1);
             bgfx::set_vertex_buffer(0, &vbh, 0, TRIANGLE_VERTICES.len() as u32);
             bgfx::set_index_buffer(&ibh, 0, std::u32::MAX);
 
