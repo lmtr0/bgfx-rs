@@ -18,31 +18,10 @@ struct PosColorVertex {
 }
 
 #[rustfmt::skip]
-static CUBE_VERTICES: [PosColorVertex; 8] = [
-    PosColorVertex { _x: -1.0, _y:  1.0, _z:  1.0, _abgr: 0xff000000 },
-    PosColorVertex { _x:  1.0, _y:  1.0, _z:  1.0, _abgr: 0xffff0000 },
-    PosColorVertex { _x: -1.0, _y: -1.0, _z:  1.0, _abgr: 0xff000000 },
-    PosColorVertex { _x:  1.0, _y: -1.0, _z:  1.0, _abgr: 0xff000000 },
-    PosColorVertex { _x: -1.0, _y:  1.0, _z: -1.0, _abgr: 0xff000000 },
-    PosColorVertex { _x:  1.0, _y:  1.0, _z: -1.0, _abgr: 0xff000000 },
-    PosColorVertex { _x: -1.0, _y: -1.0, _z: -1.0, _abgr: 0xff000000 },
-    PosColorVertex { _x:  1.0, _y: -1.0, _z: -1.0, _abgr: 0xff000000 },
-];
-
-#[rustfmt::skip]
-static CUBE_INDICES: [u16; 36] = [
-    0, 1, 2, // 0
-    1, 3, 2,
-    4, 6, 5, // 2
-    5, 6, 7,
-    0, 2, 4, // 4
-    4, 2, 6,
-    1, 5, 3, // 6
-    5, 7, 3,
-    0, 4, 1, // 8
-    4, 5, 1,
-    2, 3, 6, // 10
-    6, 3, 7,
+static TRIANGLE_VERTICES: [f32; 6] = [
+    -0.5f, -0.5f,
+    0.0f,  0.5f,
+    0.5f, -0.5f
 ];
 
 
@@ -55,7 +34,7 @@ pub fn main() -> std::io::Result<()> {
         .create_window(
             WIDTH as _,
             HEIGHT as _,
-            "cube.rs bgfx-rs example - ESC to close",
+            "triangle.rs bgfx-rs example - ESC to close",
             glfw::WindowMode::Windowed,
         )
         .expect("Failed to create GLFW window.");

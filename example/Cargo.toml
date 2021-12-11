@@ -26,3 +26,7 @@ path = "./helloworld.rs"
 [[bin]]
 name = "windows"
 path = "./windows.rs"
+
+[[bin]]
+name = "triangle"
+path = "./triangle.rs"
