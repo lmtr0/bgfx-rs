@@ -1,5 +1,6 @@
 use core::ffi::c_void;
 use std::mem::MaybeUninit;
+
 use cfixed_string::CFixedString;
 /// Fatal error enum.
 #[repr(u32)]
@@ -704,28 +705,28 @@ bitflags! {
     }
 }
 
-// bitflags! {
-//     pub struct BufferComputeFormatFlags : u16 {
-//         /// 1 8-bit value
-//         const F_8_X_1 = bgfx_sys::BGFX_BUFFER_COMPUTE_FORMAT_F8X1 as _;
-//         /// 2 8-bit values
-//         const F_8_X_2 = bgfx_sys::BGFX_BUFFER_COMPUTE_FORMAT_F8X2 as _;
-//         /// 4 8-bit values
-//         const F_8_X_4 = bgfx_sys::BGFX_BUFFER_COMPUTE_FORMAT_F8X4 as _;
-//         /// 1 16-bit value
-//         const F_16_X_1 = bgfx_sys::BGFX_BUFFER_COMPUTE_FORMAT_F16X1 as _;
-//         /// 2 16-bit values
-//         const F_16_X_2 = bgfx_sys::BGFX_BUFFER_COMPUTE_FORMAT_F16X2 as _;
-//         /// 4 16-bit values
-//         const F_16_X_4 = bgfx_sys::BGFX_BUFFER_COMPUTE_FORMAT_F16X4 as _;
-//         /// 1 32-bit value
-//         const F_32_X_1 = bgfx_sys::BGFX_BUFFER_COMPUTE_FORMAT_F32X1 as _;
-//         /// 2 32-bit values
-//         const F_32_X_2 = bgfx_sys::BGFX_BUFFER_COMPUTE_FORMAT_F32X2 as _;
-//         /// 4 32-bit values
-//         const F_32_X_4 = bgfx_sys::BGFX_BUFFER_COMPUTE_FORMAT_F32X4 as _;
-//     }
-// }
+bitflags! {
+    pub struct BufferComputeFormatFlags : u16 {
+        /// 1 8-bit value
+        const F_8_X_1 = bgfx_sys::BGFX_BUFFER_COMPUTE_FORMAT_8X1 as _;
+        /// 2 8-bit values
+        const F_8_X_2 = bgfx_sys::BGFX_BUFFER_COMPUTE_FORMAT_8X2 as _;
+        /// 4 8-bit values
+        const F_8_X_4 = bgfx_sys::BGFX_BUFFER_COMPUTE_FORMAT_8X4 as _;
+        /// 1 16-bit value
+        const F_16_X_1 = bgfx_sys::BGFX_BUFFER_COMPUTE_FORMAT_16X1 as _;
+        /// 2 16-bit values
+        const F_16_X_2 = bgfx_sys::BGFX_BUFFER_COMPUTE_FORMAT_16X2 as _;
+        /// 4 16-bit values
+        const F_16_X_4 = bgfx_sys::BGFX_BUFFER_COMPUTE_FORMAT_16X4 as _;
+        /// 1 32-bit value
+        const F_32_X_1 = bgfx_sys::BGFX_BUFFER_COMPUTE_FORMAT_32X1 as _;
+        /// 2 32-bit values
+        const F_32_X_2 = bgfx_sys::BGFX_BUFFER_COMPUTE_FORMAT_32X2 as _;
+        /// 4 32-bit values
+        const F_32_X_4 = bgfx_sys::BGFX_BUFFER_COMPUTE_FORMAT_32X4 as _;
+    }
+}
 
 bitflags! {
     pub struct BufferComputeTypeFlags : u16 {
@@ -2189,7 +2190,7 @@ impl FrameBuffer {
     ) -> FrameBuffer {
         unsafe {
             let _ret = bgfx_sys::bgfx_create_frame_buffer_from_nwh(
-                nwh,
+                nwh as _,
                 width,
                 height,
                 params.format as _,
@@ -2821,18 +2822,6 @@ impl Uniform {
             bgfx_sys::bgfx_get_uniform_info(self.handle, _info);
         }
     }
-    /// * `handle`:
-    /// Uniform.
-    /// * `value`:
-    /// Pointer to uniform data.
-    /// * `num`:
-    /// Number of elements. Passing `UINT16_MAX` will
-    /// use the _num passed on uniform creation.
-    pub fn set_uniform(&self, value: &c_void, num: u16) {
-        unsafe {
-            bgfx_sys::bgfx_set_uniform(self.handle, value, num);
-        }
-    }
 }
 
 impl Drop for Uniform {
@@ -3271,19 +3260,6 @@ impl Encoder {
             let _transform = std::mem::transmute(transform);
             let _ret = bgfx_sys::bgfx_encoder_alloc_transform(_self, _transform, num);
             _ret
-        }
-    }
-    /// * `handle`:
-    /// Uniform.
-    /// * `value`:
-    /// Pointer to uniform data.
-    /// * `num`:
-    /// Number of elements. Passing `UINT16_MAX` will
-    /// use the _num passed on uniform creation.
-    pub fn set_uniform(&self, handle: &Uniform, value: &c_void, num: u16) {
-        unsafe {
-            let _self = std::mem::transmute(self);
-            bgfx_sys::bgfx_encoder_set_uniform(_self, handle.handle, value, num);
         }
     }
     /// * `handle`:
@@ -5211,18 +5187,6 @@ pub fn alloc_transform(transform: &mut Transform, num: u16) -> u32 {
     }
 }
 /// * `handle`:
-/// Uniform.
-/// * `value`:
-/// Pointer to uniform data.
-/// * `num`:
-/// Number of elements. Passing `UINT16_MAX` will
-/// use the _num passed on uniform creation.
-pub fn set_uniform(handle: &Uniform, value: &c_void, num: u16) {
-    unsafe {
-        bgfx_sys::bgfx_set_uniform(handle.handle, value, num);
-    }
-}
-/// * `handle`:
 /// Index buffer.
 /// * `first_index`:
 /// First index to render.
@@ -5787,12 +5751,14 @@ impl Memory {
     /// of the program and is only really recommended for static data unless you know you know
     /// what you are doing. Thus this function is marked as unsafe because of this reason.
     #[inline]
-    pub unsafe fn reference<T>(data: &[T]) -> Memory {
-        let handle = bgfx_sys::bgfx_make_ref(
-            data.as_ptr() as *const c_void,
-            std::mem::size_of_val(data) as u32,
-        );
-        Memory { handle }
+    pub fn reference<T>(data: &[T]) -> Memory {
+        unsafe {
+            let handle = bgfx_sys::bgfx_make_ref(
+                data.as_ptr() as *const c_void,
+                std::mem::size_of_val(data) as u32,
+            );
+            Memory { handle }
+        }
     }
 }
 
@@ -5836,16 +5802,48 @@ pub fn set_transform(mtx: &[f32; 16], num: u16) -> u32 {
     }
 }
 
-/// * `name`:
-/// Uniform name in shader.
-/// * `type_r`:
-/// Type of uniform (See: `bgfx::UniformType`).
-/// * `num`:
-/// Number of elements in array.
-pub fn create_uniform(name: &str, type_r: UniformType, num: u16) -> Uniform {
+impl Encoder {
+    /// * `handle`: Uniform.
+    /// * `value`: Pointer to uniform data.
+    /// * `num`: Number of elements. Passing `u16::MAX` will use the _num passed on uniform creation.
+    pub fn set_uniform(&self, handle: &Uniform, value: &[f32], num: u16) {
+        unsafe {
+            let _self = std::mem::transmute(self);
+            bgfx_sys::bgfx_encoder_set_uniform(_self, handle.handle, value.as_ptr() as _, num);
+        }
+    }
+}
+
+impl Uniform {
+    /// * `name`:
+    /// Uniform name in shader.
+    /// * `type_r`:
+    /// Type of uniform (See: `bgfx::UniformType`).
+    /// * `num`:
+    /// Number of elements in array.
+    pub fn create(name: &str, type_r: UniformType, num: u16) -> Uniform {
+        unsafe {
+            let name_ = CFixedString::from_str(name);
+            let _ret = bgfx_sys::bgfx_create_uniform(name_.as_ptr() as _, type_r as _, num);
+            Uniform { handle: _ret }
+        }
+    }
+
+    /// * `handle`: Uniform.
+    /// * `value`: uniform data.
+    /// * `num`: Number of elements. Passing `u16::MAX` will use the num passed on uniform creation.
+    pub fn set(&self, value: &[f32], num: u16) {
+        unsafe {
+            bgfx_sys::bgfx_set_uniform(self.handle, value.as_ptr() as _, num);
+        }
+    }
+}
+
+/// * `handle`: Uniform.
+/// * `value`: Pointer to uniform data.
+/// * `num`: Number of elements. Passing `u16::MAX` will use the _num passed on uniform creation.
+pub fn set_uniform(handle: &Uniform, value: &[f32], num: u16) {
     unsafe {
-        let name_ = CFixedString::from_str(name);
-        let _ret = bgfx_sys::bgfx_create_uniform(name_.as_ptr() as _, type_r as _, num);
-        Uniform { handle: _ret }
+        bgfx_sys::bgfx_set_uniform(handle.handle, value.as_ptr() as _, num);
     }
 }

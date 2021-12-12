@@ -1,7 +1,8 @@
+use std::ffi::c_void;
+
 use bgfx_rs::*;
-use glam::{EulerRot, Mat4, Vec3};
-use glfw::{Action, Context, Key};
-use std::{time::Instant};
+use glam::{Mat4, Vec3, Vec4};
+use glfw::{Action, Key, ffi};
 
 mod common;
 use common::{get_render_type, get_platform_data};
@@ -14,15 +15,14 @@ struct PosColorVertex {
     _x: f32,
     _y: f32,
     _z: f32,
-    _abgr: u32,
 }
 
 #[rustfmt::skip]
 static TRIANGLE_VERTICES: [PosColorVertex; 4] = [
-    PosColorVertex { _y: -1.0,  _x: -1.0, _z: 0.0, _abgr: 0xffffffff }, // 0
-    PosColorVertex { _y:  1.0,  _x: -1.0, _z: 0.0, _abgr: 0xffffffff }, // 1
-    PosColorVertex { _y:  1.0,  _x:  1.0, _z: 0.0, _abgr: 0xffffffff }, // 2
-    PosColorVertex { _y: -1.0,  _x:  1.0, _z: 0.0, _abgr: 0xffffffff }, // 3
+    PosColorVertex { _y: -1.0,  _x: -1.0, _z: 0.0}, // 0
+    PosColorVertex { _y:  1.0,  _x: -1.0, _z: 0.0}, // 1
+    PosColorVertex { _y:  1.0,  _x:  1.0, _z: 0.0}, // 2
+    PosColorVertex { _y: -1.0,  _x:  1.0, _z: 0.0}, // 3
 ];
 
 
@@ -57,7 +57,7 @@ pub fn load_shader_program(vs: &str, ps: &str) -> std::io::Result<Program> {
     let vs_shader = bgfx::create_shader(&vs_data);
     let ps_shader = bgfx::create_shader(&ps_data);
 
-    Ok(bgfx::create_program(&vs_shader, &ps_shader, false))
+    Ok(bgfx::create_program(&vs_shader, &ps_shader, true))
 }
 
 
@@ -82,7 +82,7 @@ pub fn main() -> std::io::Result<()> {
     init.type_r = get_render_type();
     init.resolution.width = WIDTH as u32;
     init.resolution.height = HEIGHT as u32;
-    init.resolution.reset = ResetFlags::NONE.bits();
+    init.resolution.reset = ResetFlags::VSYNC.bits();
     init.platform_data = get_platform_data(&window);
 
     if !bgfx::init(&init) {
@@ -103,23 +103,15 @@ pub fn main() -> std::io::Result<()> {
         let layout = VertexLayoutBuilder::new();
         layout.begin(RendererType::Noop);
         layout.add(Attrib::Position, 3, AttribType::Float, AddArgs::default());
-        layout.add(
-            Attrib::Color0,
-            4,
-            AttribType::Uint8,
-            AddArgs {
-                normalized: true,
-                as_int: false,
-            },
-        );
         layout.end();
 
-        let verts_mem = unsafe { Memory::reference(&TRIANGLE_VERTICES) };
-        let index_mem = unsafe { Memory::reference(&TRIANGLE_INDICES) };
+        let verts_mem = Memory::reference(&TRIANGLE_VERTICES);
+        let index_mem = Memory::reference(&TRIANGLE_INDICES);
 
         let vbh = bgfx::create_vertex_buffer(&verts_mem, &layout, BufferFlags::NONE.bits());
         let ibh =  bgfx::create_index_buffer(&index_mem, BufferFlags::NONE.bits());
 
+        let u_color = Uniform::create("u_color", UniformType::Vec4, 1);
         let shader_program = load_shader_program("vs_triangle", "fs_triangle")?;
 
         let state = (StateWriteFlags::R
@@ -132,9 +124,13 @@ pub fn main() -> std::io::Result<()> {
             | StateCullFlags::CW.bits();
 
         let at = Vec3::new(0.0, 0.0, 0.0);
+        //                                        this controls the width of the view
         let eye = Vec3::new(0.0, 0.0, -5.0);
         let up = Vec3::new(0.0, 1.0, 0.0);
 
+        let mut count = 0.0;
+        let mut increment = 0.05;
+        let mut frame = 0;
         let mut old_size = (0, 0);
 
         while !window.should_close() {
@@ -166,6 +162,21 @@ pub fn main() -> std::io::Result<()> {
             let y = 0.0;
             let transform = Mat4::from_translation(Vec3::new(x, y, 0.0));
             
+            let data = [count, 0.5, 1.0, 1.0];
+            frame += 1;
+            if frame == 150 {
+                if count > 1.0 {
+                    increment = -0.05;
+                }
+                else if count < 0.0 {
+                    increment = 0.05;
+                }
+                count += increment;
+                frame = 0;
+            }
+
+            bgfx::set_uniform(&u_color, &data, 1);
+
             bgfx::set_transform(&transform.to_cols_array(), 1);
             bgfx::set_vertex_buffer(0, &vbh, 0, TRIANGLE_VERTICES.len() as u32);
             bgfx::set_index_buffer(&ibh, 0, std::u32::MAX);
@@ -173,6 +184,8 @@ pub fn main() -> std::io::Result<()> {
             bgfx::set_state(state, 0);
             bgfx::submit(0, &shader_program, SubmitArgs::default());
             
+
+            // Second triangle
             let x = 2.0;
             let y = 0.0;
             let transform = Mat4::from_translation(Vec3::new(x, y, 0.0));

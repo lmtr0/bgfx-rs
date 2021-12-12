@@ -99,8 +99,8 @@ pub fn main() -> std::io::Result<()> {
         );
         layout.end();
 
-        let verts_mem = unsafe { Memory::reference(&CUBE_VERTICES) };
-        let index_mem = unsafe { Memory::reference(&CUBE_INDICES) };
+        let verts_mem = Memory::reference(&CUBE_VERTICES);
+        let index_mem = Memory::reference(&CUBE_INDICES);
 
         let vbh = bgfx::create_vertex_buffer(&verts_mem, &layout, BufferFlags::NONE.bits());
         let ibh = bgfx::create_index_buffer(&index_mem, BufferFlags::NONE.bits());

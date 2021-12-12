@@ -27,6 +27,7 @@ fn main() {
         .allowlist_type("BGFX.*")
         .allowlist_var("bgfx.*")
         .allowlist_var("BGFX.*")
+        .allowlist_var("BGFX_BUFFER_COMPUTE.*")
         
         .header("src/header.h")
         .allowlist_recursively(true)
