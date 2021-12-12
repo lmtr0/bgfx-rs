@@ -1,8 +1,6 @@
-use std::ffi::c_void;
-
 use bgfx_rs::*;
-use glam::{Mat4, Vec3, Vec4};
-use glfw::{Action, Key, ffi};
+use glam::{Mat4, Vec3};
+use glfw::{Action, Key};
 
 mod common;
 use common::{get_render_type, get_platform_data};
@@ -77,13 +75,16 @@ pub fn main() -> std::io::Result<()> {
     window.set_key_polling(true);
 
 
+    bgfx::set_platform_data(&get_platform_data(&window));
     let mut init = Init::new();
 
     init.type_r = get_render_type();
-    init.resolution.width = WIDTH as u32;
-    init.resolution.height = HEIGHT as u32;
+    // init.resolution.width = WIDTH as u32;
+    // init.resolution.height = HEIGHT as u32;
     init.resolution.reset = ResetFlags::VSYNC.bits();
-    init.platform_data = get_platform_data(&window);
+    init.debug = false;
+    init.resolution.reset = ResetFlags::VSYNC.bits();
+    // init.platform_data = get_platform_data(&window);
 
     if !bgfx::init(&init) {
         panic!("failed to init bgfx");
@@ -108,8 +109,8 @@ pub fn main() -> std::io::Result<()> {
         let verts_mem = Memory::reference(&TRIANGLE_VERTICES);
         let index_mem = Memory::reference(&TRIANGLE_INDICES);
 
-        let vbh = bgfx::create_vertex_buffer(&verts_mem, &layout, BufferFlags::NONE.bits());
-        let ibh =  bgfx::create_index_buffer(&index_mem, BufferFlags::NONE.bits());
+        let vbh = bgfx::create_vertex_buffer(&verts_mem, &layout, BufferFlags::COMPUTE_READ_WRITE.bits());
+        let ibh =  bgfx::create_index_buffer(&index_mem, BufferFlags::COMPUTE_READ_WRITE.bits());
 
         let u_color = Uniform::create("u_color", UniformType::Vec4, 1);
         let shader_program = load_shader_program("vs_triangle", "fs_triangle")?;
@@ -123,16 +124,17 @@ pub fn main() -> std::io::Result<()> {
             | StateDepthTestFlags::LESS.bits()
             | StateCullFlags::CW.bits();
 
-        let at = Vec3::new(0.0, 0.0, 0.0);
-        //                                        this controls the width of the view
+        let at = Vec3::new(0.0, 0.0, 0.0); // total rotation
+        //                                        V this controls the width of the view
         let eye = Vec3::new(0.0, 0.0, -5.0);
-        let up = Vec3::new(0.0, 1.0, 0.0);
+        let up = Vec3::new(0.0, 1.0, 0.0); // individual object rotation
 
         let mut count = 0.0;
         let mut increment = 0.05;
         let mut frame = 0;
         let mut old_size = (0, 0);
-
+        
+        bgfx::touch(0);
         while !window.should_close() {
             glfw.poll_events();
             for (_, event) in glfw::flush_messages(&events) {
@@ -154,7 +156,6 @@ pub fn main() -> std::io::Result<()> {
             let view_mtx = Mat4::look_at_lh(eye, at, up);
 
             bgfx::set_view_rect(0, 0, 0, size.0 as _, size.1 as _);
-            bgfx::touch(0);
 
             bgfx::set_view_transform(0, &view_mtx.to_cols_array(), &proj_mtx.to_cols_array());
 

@@ -64,8 +64,8 @@ pub fn main() -> std::io::Result<()>  {
             old_size = size;
         }
 
-        bgfx::set_view_rect(0, 0, 0, size.0 as _, size.1 as _);
         bgfx::touch(0);
+        bgfx::set_view_rect(0, 0, 0, size.0 as _, size.1 as _);
 
         bgfx::dbg_text_clear(DbgTextClearArgs::default());
 

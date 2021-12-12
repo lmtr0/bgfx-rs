@@ -53,6 +53,9 @@ fn main() {
     build.define("BGFX_CONFIG_MULTITHREADED", "1");
     build.define("BX_CONFIG_DEBUG", "0");
 
+    build.debug(false);
+    build.opt_level(3);
+
     if iswindows {
         build.include("bx/include/compat/mingw");
         // build.include("bgfx/3rdparty/dxsdk/include");
@@ -187,4 +190,5 @@ fn main() {
     }
     
     println!("cargo:warning=All Done");
+    println!("cargo:rerun-if-changed=build.rs")
 }
