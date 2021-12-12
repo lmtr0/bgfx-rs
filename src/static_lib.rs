@@ -3981,8 +3981,7 @@ pub fn reset(width: u32, height: u32, params: ResetArgs) {
 /// Capture frame with graphics debugger.
 pub fn frame(capture: bool) -> u32 {
     unsafe {
-        let _ret = bgfx_sys::bgfx_frame(capture);
-        _ret
+        bgfx_sys::bgfx_frame(capture)
     }
 }
 pub fn get_renderer_type() -> RendererType {

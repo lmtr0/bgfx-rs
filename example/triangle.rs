@@ -136,6 +136,7 @@ pub fn main() -> std::io::Result<()> {
         
         bgfx::touch(0);
         while !window.should_close() {
+            // glfw.wait_events();
             glfw.poll_events();
             for (_, event) in glfw::flush_messages(&events) {
                 if let glfw::WindowEvent::Key(Key::Escape, _, Action::Press, _) = event {
@@ -155,7 +156,7 @@ pub fn main() -> std::io::Result<()> {
             let proj_mtx = Mat4::perspective_lh(60.0 * (std::f32::consts::PI / 180.0), aspect, 0.1, 100.0);
             let view_mtx = Mat4::look_at_lh(eye, at, up);
 
-            bgfx::set_view_rect(0, 0, 0, size.0 as _, size.1 as _);
+            bgfx::set_view_rect(0, 0, 0, size.0 as u16, size.1 as u16);
 
             bgfx::set_view_transform(0, &view_mtx.to_cols_array(), &proj_mtx.to_cols_array());
 
