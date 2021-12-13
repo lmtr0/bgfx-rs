@@ -46,12 +46,17 @@ fn main() {
     // macOS - Metal
     // Posix - Vulkan, OpenGL
     // In the future it would be good to make this configurable instead
+    // build.no_default_flags(true);
 
     build.define("BGFX_CONFIG_RENDERER_WEBGPU", "0");
     build.define("BGFX_CONFIG_RENDERER_GNM", "0");
     build.define("BIMG_DECODE_ASTC", "0");
     build.define("BGFX_CONFIG_MULTITHREADED", "1");
     build.define("BX_CONFIG_DEBUG", "0");
+    build.define("BGFX_CONFIG_MULTITHREADED", "0"); // maybe
+    build.define("NDEBUG", "1");
+
+    
 
     build.debug(false);
     build.opt_level(3);
@@ -82,7 +87,29 @@ fn main() {
     else if isunix {
         build.define("BGFX_CONFIG_RENDERER_VULKAN", "1");
         build.define("BGFX_CONFIG_RENDERER_OPENGL", "1");
-        build.warnings(false);
+
+        build.flag("-mpreferred-stack-boundary=4");
+        build.flag("-ffast-math");
+        build.flag("-fomit-frame-pointer");
+        build.flag("-g");
+        build.flag("-O3");
+        build.flag("-mfpmath=sse");
+        build.flag("-msse2");
+        build.flag("-m64");
+        build.flag("-fPIE");
+        build.flag("-fPIC");
+        build.flag("-std=c++14");
+        build.flag("-fno-rtti");
+        build.flag("-fno-exceptions");
+        build.flag("-fno-omit-frame-pointer");
+        
+        // break the build
+        // build.flag("-fsanitize=address");
+        // build.flag("-fsanitize=undefined");
+        // build.flag("-fsanitize=float-divide-by-zero");
+        // build.flag("-fsanitize=float-cast-overflow");
+        
+        build.warnings(true);
     }
 
 
@@ -174,9 +201,11 @@ fn main() {
 
         println!("cargo:rustc-link-lib=c++");
         
+        // println!("cargo:rustc-link-lib=framework=OpenGL");
+        println!("cargo:rustc-link-lib=framework=Cocoa");
         println!("cargo:rustc-link-lib=framework=QuartzCore");
-        println!("cargo:rustc-link-lib=framework=AppKit");
-        // println!("cargo:rustc-link-lib=framework=Metal");
+        println!("cargo:rustc-link-lib=framework=Metal");
+        println!("cargo:rustc-link-lib=framework=MetalKit");        
     } 
     else if isunix {
         println!("cargo:warning=Compiling to Unix (linux)");
@@ -184,6 +213,7 @@ fn main() {
         println!("cargo:rustc-link-lib=stdc++");
         println!("cargo:rustc-link-lib=GL");
         println!("cargo:rustc-link-lib=X11");
+        println!("cargo:rustc-link-lib=pthread");
     }
     else {
         panic!("OS not suported")
