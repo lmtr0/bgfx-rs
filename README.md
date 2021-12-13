@@ -1,5 +1,7 @@
 # bgfx-rs
 
+> NOTE: ATTENTION this is a fork of the [original wrapper](https://github.com/emoon/bgfx-rs) for educational purposes. MY REPOSITORY IS NOT THE SAME AS THE ORIGINAL!
+
 Rust bindings to [bgfx](https://github.com/bkaradzic/bgfx), a cross-platform, graphics API agnostic, "Bring Your Own Engine/Framework" style rendering library.
 
 ## Why another wrapper?
@@ -17,7 +19,7 @@ Usage
 ```toml
 # Cargo.toml
 [dependencies]
-bgfx-rs = "0.4"
+bgfx-rs = { git = "https://github.com/lmtr0/bgfx-rs" }
 ```
 
 The library doesn't include any window handling and that has to be provided by the user. See [examples](https://github.com/emoon/bgfx-rs/tree/main/examples) an how to use [GLFW](https://crates.io/crates/glfw)
