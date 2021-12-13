@@ -36,3 +36,8 @@ path = "./triangle.rs"
 [[bin]]
 name = "font"
 path = "./font.rs"
+
+
+[[bin]]
+name = "minimal"
+path = "./minimal.rs"

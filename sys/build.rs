@@ -140,10 +140,32 @@ fn main() {
 
     // bimg
     build.include("bimg/include");
+    build.include("bimg/src");
     build.include("bimg/3rdparty");
     build.include("bimg/3rdparty/iqa/include/");
     build.include("bimg/3rdparty/astc-codec/include");
     build.include("bimg/3rdparty/tinyexr/deps/miniz/");
+
+    build.flag("include/**");
+    build.flag("src/image_encode.*");
+    build.flag("src/image_cubemap_filter.*");
+    build.flag("3rdparty/libsquish/**.cpp");
+    build.flag("3rdparty/libsquish/**.h");
+    build.flag("3rdparty/edtaa3/**.cpp");
+    build.flag("3rdparty/edtaa3/**.h");
+    build.flag("3rdparty/etc1/**.cpp");
+    build.flag("3rdparty/etc1/**.h");
+    build.flag("3rdparty/etc2/**.cpp");
+    build.flag("3rdparty/etc2/**.hpp");
+    build.flag("3rdparty/nvtt/**.cpp");
+    build.flag("3rdparty/nvtt/**.h");
+    build.flag("3rdparty/pvrtc/**.cpp");
+    build.flag("3rdparty/pvrtc/**.h");
+    build.flag("3rdparty/astc/**.cpp");
+    build.flag("3rdparty/astc/**.h");
+    build.flag("3rdparty/tinyexr/**.h");
+    build.flag("3rdparty/iqa/include/**.h");
+    build.flag("3rdparty/iqa/source/**.c");
     
     build.file("bimg/src/image.cpp");
     build.file("bimg/src/image_cubemap_filter.cpp");
