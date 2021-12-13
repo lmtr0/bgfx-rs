@@ -40,26 +40,19 @@ fn main() {
 
 
     // ! build
-    // defines - Currently not supporting WebGPU, GNM and Vulkan
-    // OS support:
-    // Windows - DirectX and Vulkan
-    // macOS - Metal
-    // Posix - Vulkan, OpenGL
-    // In the future it would be good to make this configurable instead
-    // build.no_default_flags(true);
-
     build.define("BGFX_CONFIG_RENDERER_WEBGPU", "0");
     build.define("BGFX_CONFIG_RENDERER_GNM", "0");
-    build.define("BIMG_DECODE_ASTC", "0");
-    build.define("BGFX_CONFIG_MULTITHREADED", "1");
+    // build.define("BIMG_DECODE_ASTC", "0");
+    build.define("BGFX_CONFIG_MULTITHREADED", "1"); // maybe
+
+    // disable debug
     build.define("BX_CONFIG_DEBUG", "0");
-    build.define("BGFX_CONFIG_MULTITHREADED", "0"); // maybe
     build.define("NDEBUG", "1");
+    build.debug(false);
+    build.opt_level(3);
 
     
 
-    build.debug(false);
-    build.opt_level(3);
 
     if iswindows {
         build.include("bx/include/compat/mingw");
@@ -67,21 +60,24 @@ fn main() {
 
         build.define("BGFX_CONFIG_RENDERER_VULKAN", "1");
         build.define("BGFX_CONFIG_RENDERER_DIRECT3D11", "1");
-        build.define("_WIN32", None);
-        build.define("_HAS_EXCEPTIONS", "0");
-        build.define("_SCL_SECURE", "0");
-        build.define("_SECURE_SCL", "0");
-        build.define("__STDC_LIMIT_MACROS", None);
-        build.define("__STDC_FORMAT_MACROS", None);
-        build.define("__STDC_CONSTANT_MACROS", None);
-        build.define("_CRT_SECURE_NO_WARNINGS", None);
-        build.define("_CRT_SECURE_NO_DEPRECATE", None);
+        // build.define("_WIN32", None);
+        // build.define("_HAS_EXCEPTIONS", "0");
+        // build.define("_SCL_SECURE", "0");
+        // build.define("_SECURE_SCL", "0");
+        // build.define("__STDC_LIMIT_MACROS", None);
+        // build.define("__STDC_FORMAT_MACROS", None);
+        // build.define("__STDC_CONSTANT_MACROS", None);
+        // build.define("_CRT_SECURE_NO_WARNINGS", None);
+        // build.define("_CRT_SECURE_NO_DEPRECATE", None);
         build.warnings(false);
     } 
     else if isdarwin {
         build.define("BGFX_CONFIG_RENDERER_VULKAN", "0");
+        build.define("BGFX_CONFIG_RENDERER_OPENGL", "0");
         build.define("BGFX_CONFIG_RENDERER_METAL", "1");
+
         build.include("bx/include/compat/osx");
+        
         build.warnings(false);
     }
     else if isunix {
@@ -201,7 +197,7 @@ fn main() {
 
         println!("cargo:rustc-link-lib=c++");
         
-        // println!("cargo:rustc-link-lib=framework=OpenGL");
+        // println!("cargo:rustc-link-lib=framework=OpenGL"); // deprecated by apple
         println!("cargo:rustc-link-lib=framework=Cocoa");
         println!("cargo:rustc-link-lib=framework=QuartzCore");
         println!("cargo:rustc-link-lib=framework=Metal");
