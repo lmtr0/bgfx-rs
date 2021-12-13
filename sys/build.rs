@@ -42,7 +42,7 @@ fn main() {
     // ! build
     build.define("BGFX_CONFIG_RENDERER_WEBGPU", "0");
     build.define("BGFX_CONFIG_RENDERER_GNM", "0");
-    // build.define("BIMG_DECODE_ASTC", "0");
+    build.define("BIMG_DECODE_ASTC", "0");
     build.define("BGFX_CONFIG_MULTITHREADED", "1"); // maybe
 
     // disable debug
@@ -146,26 +146,27 @@ fn main() {
     build.include("bimg/3rdparty/astc-codec/include");
     build.include("bimg/3rdparty/tinyexr/deps/miniz/");
 
-    build.flag("include/**");
-    build.flag("src/image_encode.*");
-    build.flag("src/image_cubemap_filter.*");
-    build.flag("3rdparty/libsquish/**.cpp");
-    build.flag("3rdparty/libsquish/**.h");
-    build.flag("3rdparty/edtaa3/**.cpp");
-    build.flag("3rdparty/edtaa3/**.h");
-    build.flag("3rdparty/etc1/**.cpp");
-    build.flag("3rdparty/etc1/**.h");
-    build.flag("3rdparty/etc2/**.cpp");
-    build.flag("3rdparty/etc2/**.hpp");
-    build.flag("3rdparty/nvtt/**.cpp");
-    build.flag("3rdparty/nvtt/**.h");
-    build.flag("3rdparty/pvrtc/**.cpp");
-    build.flag("3rdparty/pvrtc/**.h");
-    build.flag("3rdparty/astc/**.cpp");
-    build.flag("3rdparty/astc/**.h");
-    build.flag("3rdparty/tinyexr/**.h");
-    build.flag("3rdparty/iqa/include/**.h");
-    build.flag("3rdparty/iqa/source/**.c");
+
+    // add_all_files("3rdparty/libsquish/*.cpp", &mut build);
+    // add_all_files("src/image_encode.*", &mut build);
+    // add_all_files("src/image_cubemap_filter.*", &mut build);
+    // add_all_files("3rdparty/libsquish/*.cpp", &mut build);
+    // add_all_files("3rdparty/libsquish/*.h", &mut build);
+    // add_all_files("3rdparty/edtaa3/*.cpp", &mut build);
+    // add_all_files("3rdparty/edtaa3/*.h", &mut build);
+    // add_all_files("3rdparty/etc1/*.cpp", &mut build);
+    // add_all_files("3rdparty/etc1/*.h", &mut build);
+    // add_all_files("3rdparty/etc2/*.cpp", &mut build);
+    // add_all_files("3rdparty/etc2/*.hpp", &mut build);
+    // add_all_files("3rdparty/nvtt/*.cpp", &mut build);
+    // add_all_files("3rdparty/nvtt/*.h", &mut build);
+    // add_all_files("3rdparty/pvrtc/*.cpp", &mut build);
+    // add_all_files("3rdparty/pvrtc/*.h", &mut build);
+    // add_all_files("3rdparty/astc/*.cpp", &mut build);
+    // add_all_files("3rdparty/astc/*.h", &mut build);
+    // add_all_files("3rdparty/tinyexr/*.h", &mut build);
+    // add_all_files("3rdparty/iqa/include/*.h", &mut build);
+    // add_all_files("3rdparty/iqa/source/*.c", &mut build);
     
     build.file("bimg/src/image.cpp");
     build.file("bimg/src/image_cubemap_filter.cpp");
