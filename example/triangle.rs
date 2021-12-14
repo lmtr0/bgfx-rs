@@ -39,7 +39,7 @@ pub fn load_shader_file(name: &str) -> std::io::Result<Vec<u8>> {
         e => panic!("Unsupported render type {:#?}", e),
     };
 
-    let mut data = std::fs::read(format!("../resources/{}.{}", name, ext))?;
+    let mut data = std::fs::read(format!("../resources/triangle/{}.{}", name, ext))?;
     data.push(0); // this is to terminate the data
     Ok(data)
 }

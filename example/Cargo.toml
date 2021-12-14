@@ -8,10 +8,9 @@ edition = "2021"
 [dependencies]
 glfw = "*"
 glam = "*"
-font-kit = "0.10.1"
-pathfinder_geometry = "0.5.1"
 raw-window-handle = "*"
 bgfx-rs = { path="../" }
+freetype-rs = "0.29.0"
 
 [[bin]]
 name = "cubes"
