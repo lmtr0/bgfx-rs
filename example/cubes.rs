@@ -1,10 +1,10 @@
 use bgfx_rs::*;
 use glam::{EulerRot, Mat4, Vec3};
-use glfw::{Action, Context, Key};
+use glfw::{Action, Context, Key, WindowHint, ClientApiHint};
 use std::{time::Instant};
 
 mod common;
-use common::{get_platform_data, get_render_type, load_shader_program};
+use common::{get_platform_data, get_render_type, _load_shader_program};
 
 const WIDTH: usize = 1280;
 const HEIGHT: usize = 720;
@@ -47,6 +47,7 @@ static CUBE_INDICES: [u16; 36] = [
 
 pub fn main() -> std::io::Result<()> {
     let mut glfw = glfw::init(glfw::FAIL_ON_ERRORS).unwrap();
+    glfw.window_hint(WindowHint::ClientApi(ClientApiHint::NoApi));
 
     let (mut window, events) = glfw
         .create_window(
@@ -105,7 +106,7 @@ pub fn main() -> std::io::Result<()> {
         let vbh = bgfx::create_vertex_buffer(&verts_mem, &layout, BufferFlags::NONE.bits());
         let ibh = bgfx::create_index_buffer(&index_mem, BufferFlags::NONE.bits());
 
-        let shader_program = load_shader_program("vs_cubes", "fs_cubes")?;
+        let shader_program = _load_shader_program("vs_cubes", "fs_cubes")?;
 
         let state = (StateWriteFlags::R
             | StateWriteFlags::G

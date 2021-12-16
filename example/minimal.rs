@@ -1,11 +1,12 @@
 use std::ffi::c_void;
 
-use glfw::{self, Key, Action};
+use glfw::{self, Key, Action, ClientApiHint, WindowHint};
 use bgfx_rs::*;
 mod common;
 use common::{get_platform_data, get_render_type};
 fn main() {
     let mut glfw = glfw::init(glfw::FAIL_ON_ERRORS).expect("Error initializing library");
+    glfw.window_hint(WindowHint::ClientApi(ClientApiHint::NoApi));
 
     let (mut window, events) = glfw.create_window(
         1080 as _, 

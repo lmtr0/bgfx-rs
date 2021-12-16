@@ -11,7 +11,8 @@ glam = "*"
 raw-window-handle = "*"
 bgfx-rs = { path="../" }
 freetype-rs = "0.29.0"
-
+winit = "0.22.2"
+image = "0.23.14"
 [[bin]]
 name = "cubes"
 path = "./cubes.rs"
@@ -40,3 +41,11 @@ path = "./font.rs"
 [[bin]]
 name = "minimal"
 path = "./minimal.rs"
+
+[[bin]]
+name = "winit"
+path = "./winit.rs"
+
+[[bin]]
+name = "image"
+path = "./image.rs"

@@ -1,12 +1,13 @@
 use bgfx::*;
 use bgfx_rs::bgfx;
 use core::ffi::c_void;
-use glfw::{Action, Key};
+use glfw::{Action, Key, WindowHint, ClientApiHint};
 mod common;
 use common::{get_platform_data, get_render_type};
 
 fn main() {
     let mut glfw = glfw::init(glfw::FAIL_ON_ERRORS).expect("Error initializing library");
+    glfw.window_hint(WindowHint::ClientApi(ClientApiHint::NoApi));
 
     let (mut window, events) = glfw
         .create_window(1080 as _, 900 as _, "Window 1", glfw::WindowMode::Windowed)
@@ -39,7 +40,17 @@ fn main() {
     }
 
     let windows = [window, window2];
-    let mut framebuffers = [None, None];
+    let mut framebuffers = [bgfx::create_frame_buffer_from_nwh(
+        get_platform_data(&windows[0]).nwh as *mut c_void,
+        windows[0].get_size().0 as u16,
+        windows[0].get_size().1 as u16,
+        CreateFrameBufferFromNwhArgs::default(),
+    ), bgfx::create_frame_buffer_from_nwh(
+        get_platform_data(&windows[1]).nwh as *mut c_void,
+        windows[1].get_size().0 as u16,
+        windows[1].get_size().1 as u16,
+        CreateFrameBufferFromNwhArgs::default(),
+    )];
     let mut frame_sizes = [(0, 0), (0, 0)];
 
     let mut should_close = false;
@@ -56,19 +67,10 @@ fn main() {
             let window = &windows[idx];
             let size = window.get_framebuffer_size();
             
-            if framebuffers[idx].is_none() || frame_sizes[idx] != size {
-                framebuffers[idx] = Some(bgfx::create_frame_buffer_from_nwh(
-                    get_platform_data(&window).nwh as *mut c_void,
-                    size.0 as u16,
-                    size.1 as u16,
-                    CreateFrameBufferFromNwhArgs::default(),
-                ));
-                
+            if frame_sizes[idx] != size {
+                bgfx::set_view_frame_buffer(idx.try_into().unwrap(), &framebuffers[idx]);
+                bgfx::reset(size.0.try_into().unwrap(), size.1.try_into().unwrap(), ResetArgs::default());
                 frame_sizes[idx] = size;
-            }
-            
-            if let Some(frame_buffer) = &framebuffers[idx] {
-                bgfx::set_view_frame_buffer(idx as _, &frame_buffer);
             }
             
             bgfx::touch(idx as _);
@@ -90,9 +92,7 @@ fn main() {
     } // end main loop
 
     for frame in framebuffers {
-        if let Some(f) = frame {
-            drop(f)
-        }
+        drop(frame)
     }
 
     bgfx::shutdown();

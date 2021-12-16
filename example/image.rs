@@ -1,9 +1,10 @@
+mod common;
+use std::io::Read;
+
+use common::{get_render_type, get_platform_data};
 use bgfx_rs::*;
 use glam::{Mat4, Vec3};
 use glfw::{Action, Key, WindowHint, ClientApiHint};
-
-mod common;
-use common::{get_render_type, get_platform_data};
 
 const WIDTH: usize = 1280;
 const HEIGHT: usize = 720;
@@ -39,7 +40,7 @@ pub fn load_shader_file(name: &str) -> std::io::Result<Vec<u8>> {
         e => panic!("Unsupported render type {:#?}", e),
     };
 
-    let mut data = std::fs::read(format!("../resources/triangle/{}.{}", name, ext))?;
+    let mut data = std::fs::read(format!("../resources/image/{}.{}", name, ext))?;
     data.push(0); // this is to terminate the data
     Ok(data)
 }
@@ -61,6 +62,11 @@ pub fn load_shader_program(vs: &str, ps: &str) -> std::io::Result<Program> {
 
 
 pub fn main() -> std::io::Result<()> {
+    let img = image::open("../resources/image/image.jpeg");
+    let img = img.unwrap().to_bgr8();
+    
+    println!("Dim: {:?}", img.dimensions());
+
     let mut glfw = glfw::init(glfw::FAIL_ON_ERRORS).unwrap();
     glfw.window_hint(WindowHint::ClientApi(ClientApiHint::NoApi));
 
@@ -113,8 +119,8 @@ pub fn main() -> std::io::Result<()> {
         let vbh = bgfx::create_vertex_buffer(&verts_mem, &layout, BufferFlags::COMPUTE_READ_WRITE.bits());
         let ibh =  bgfx::create_index_buffer(&index_mem, BufferFlags::COMPUTE_READ_WRITE.bits());
 
-        let u_color = Uniform::create("u_color", UniformType::Vec4, 1);
-        let shader_program = load_shader_program("vs_triangle", "fs_triangle")?;
+        let u_color = Uniform::create("u_texture", UniformType::Sampler, 1);
+        let shader_program = load_shader_program("vs_image", "fs_image")?;
 
         let state = (StateWriteFlags::R
             | StateWriteFlags::G

@@ -52,7 +52,7 @@ pub fn get_render_type() -> RendererType {
     return RendererType::Metal;
 }
 
-pub fn load_shader_file(name: &str) -> std::io::Result<Vec<u8>> {
+pub fn _load_shader_file(name: &str) -> std::io::Result<Vec<u8>> {
     let mut path = PathBuf::with_capacity(512);
     path.push("../resources/examples/runtime/shaders");
 
@@ -73,9 +73,9 @@ pub fn load_shader_file(name: &str) -> std::io::Result<Vec<u8>> {
 }
 
 // load shaders and create shader program
-pub fn load_shader_program(vs: &str, ps: &str) -> std::io::Result<Program> {
-    let vs_data = load_shader_file(vs)?;
-    let ps_data = load_shader_file(ps)?;
+pub fn _load_shader_program(vs: &str, ps: &str) -> std::io::Result<Program> {
+    let vs_data = _load_shader_file(vs)?;
+    let ps_data = _load_shader_file(ps)?;
 
     let vs_data = Memory::copy(&vs_data);
     let ps_data = Memory::copy(&ps_data);

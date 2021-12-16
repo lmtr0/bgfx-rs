@@ -1,6 +1,6 @@
 use bgfx::*;
 use bgfx_rs::bgfx;
-use glfw::{Action, Context, Key};
+use glfw::{Action, Context, Key, WindowHint, ClientApiHint};
 
 mod common;
 use common::{get_render_type, get_platform_data};
@@ -11,6 +11,7 @@ const HEIGHT: usize = 720;
 
 pub fn main() -> std::io::Result<()>  {
     let mut glfw = glfw::init(glfw::FAIL_ON_ERRORS).unwrap();
+    glfw.window_hint(WindowHint::ClientApi(ClientApiHint::NoApi));
 
     let (mut window, events) = glfw
         .create_window(
