@@ -40,12 +40,12 @@ fn main() {
     }
 
     let windows = [window, window2];
-    let framebuffers = [bgfx::create_frame_buffer_from_nwh(
+    let mut framebuffers = vec![FrameBuffer::create_frame_buffer_from_nwh(
         get_platform_data(&windows[0]).nwh as *mut c_void,
         windows[0].get_size().0 as u16,
         windows[0].get_size().1 as u16,
         CreateFrameBufferFromNwhArgs::default(),
-    ), bgfx::create_frame_buffer_from_nwh(
+    ), FrameBuffer::create_frame_buffer_from_nwh(
         get_platform_data(&windows[1]).nwh as *mut c_void,
         windows[1].get_size().0 as u16,
         windows[1].get_size().1 as u16,
@@ -65,15 +65,23 @@ fn main() {
         for idx in 0..2 {
             
             let window = &windows[idx];
-            let fb = &framebuffers[idx];
             let size = window.get_framebuffer_size();
-            // set the working framebuffer
-            bgfx::set_view_frame_buffer(idx.try_into().unwrap(), &fb);
             
             if frame_sizes[idx] != size {
-                bgfx::reset(size.0.try_into().unwrap(), size.1.try_into().unwrap(), ResetArgs::default());
+                framebuffers[idx] = bgfx::create_frame_buffer_from_nwh(
+                    get_platform_data(window).nwh as *mut c_void,
+                    window.get_size().0 as u16,
+                    window.get_size().1 as u16,
+                    CreateFrameBufferFromNwhArgs::default(),
+                );
+
                 frame_sizes[idx] = size;
             }
+            
+            let fb = &framebuffers[idx];
+            
+            // set the working framebuffer
+            bgfx::set_view_frame_buffer(idx.try_into().unwrap(), &fb);
             
             bgfx::touch(idx as _);
             let color = if idx & 1 == 0 { 0x103030ff } else { 0x755413ff };
