@@ -40,7 +40,7 @@ fn main() {
     }
 
     let windows = [window, window2];
-    let mut framebuffers = [bgfx::create_frame_buffer_from_nwh(
+    let framebuffers = [bgfx::create_frame_buffer_from_nwh(
         get_platform_data(&windows[0]).nwh as *mut c_void,
         windows[0].get_size().0 as u16,
         windows[0].get_size().1 as u16,
@@ -65,10 +65,12 @@ fn main() {
         for idx in 0..2 {
             
             let window = &windows[idx];
+            let fb = &framebuffers[idx];
             let size = window.get_framebuffer_size();
+            // set the working framebuffer
+            bgfx::set_view_frame_buffer(idx.try_into().unwrap(), &fb);
             
             if frame_sizes[idx] != size {
-                bgfx::set_view_frame_buffer(idx.try_into().unwrap(), &framebuffers[idx]);
                 bgfx::reset(size.0.try_into().unwrap(), size.1.try_into().unwrap(), ResetArgs::default());
                 frame_sizes[idx] = size;
             }
