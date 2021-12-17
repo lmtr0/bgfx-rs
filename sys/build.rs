@@ -18,25 +18,42 @@ fn main() {
         Command::new("sh").arg(format!("{}/update.sh", &curdir)).current_dir(&curdir).spawn().expect("Failed to update sources").wait().expect("Failed to copy toolchain");
     }
 
-    //? generate ffi
-    let bindings = bindgen::builder()
-        .layout_tests(false)
-        .prepend_enum_name(false)
-        .allowlist_function("bgfx.*")
-        .allowlist_type("bgfx.*")
-        .allowlist_type("BGFX.*")
-        .allowlist_var("bgfx.*")
-        .allowlist_var("BGFX.*")
-        .allowlist_var("BGFX_BUFFER_COMPUTE.*")
-        
-        .header("src/header.h")
-        .allowlist_recursively(true)
-        .clang_arg("-Ibx/include")
-        .generate().expect("Failed to generate bindings");
+    // ? generate ffi
+    // ! broke..
+    // let bindings = bindgen::builder()
+    //     .layout_tests(false)
+    //     .clang_arg("-Ibx/include")
 
-    bindings
-        .write_to_file("src/ffi.rs")
-        .expect("Couldn't write bindings!");
+    //     .prepend_enum_name(true)
+    //     .allowlist_function("bgfx.*")
+    //     .allowlist_type("bgfx.*")
+    //     .allowlist_type("BGFX_.*")
+    //     .allowlist_var("bgfx.*")
+    //     .allowlist_var("BGFX.*")
+
+    //     // specific types that break bindgen
+    //     .allowlist_var("BGFX_BUFFER_COMPUTE.*")
+    //     .allowlist_var("BGFX_STATE_WRITE_R.*")
+    //     .allowlist_var("BGFX_STENCIL_OP_PASS_Z_ZERO.*")
+    //     .allowlist_var("BGFX_CLEAR_NONE.*")
+    //     .allowlist_var("BGFX_DISCARD_NONE.*")
+    //     .allowlist_var("BGFX_BUFFER_NONE.*")
+    //     .allowlist_var("BGFX_TEXTURE_NONE.*")
+    //     .allowlist_var("BGFX_SAMPLER_NONE.*")
+    //     .allowlist_var("BGFX_RESET_NONE.*")
+    //     .allowlist_var("BGFX_CAPS_ALPHA_TO_COVERAGE.*")
+    //     .allowlist_var("BGFX_RESOLVE_NONE.*")
+    //     .allowlist_var("BGFX_PCI_ID_NONE.*")
+    //     .allowlist_var("BGFX_CUBE_MAP_POSITIVE_X.*")
+    //     .allowlist_var("BGFX_STATE_BLEND_FUNC_RT_1E.*")
+        
+    //     .header("src/header.h")
+    //     .allowlist_recursively(true)
+    //     .generate().expect("Failed to generate bindings");
+
+    // bindings
+    //     .write_to_file("src/lib.rs")
+    //     .expect("Couldn't write bindings!");
 
 
     // ! build
@@ -50,9 +67,6 @@ fn main() {
     build.define("NDEBUG", "1");
     build.debug(false);
     build.opt_level(3);
-
-    
-
 
     if iswindows {
         build.include("bx/include/compat/mingw");
@@ -239,5 +253,7 @@ fn main() {
     }
     
     println!("cargo:warning=All Done");
-    println!("cargo:rerun-if-changed=build.rs")
+    println!("cargo:rerun-if-changed=build.rs");
+    println!("cargo:rerun-if-changed=src/ffi.rs");
+    println!("cargo:rerun-if-changed=src/lib.rs");
 }

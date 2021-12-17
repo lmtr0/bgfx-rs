@@ -26,6 +26,6 @@ crate_type = [ "rlib" ]
 maintenance = {status = "actively-developed"}
 
 [build-dependencies]
-bindgen = "0.59.1"
+bindgen = "0.59.2"
 cc = { version = "1.0", features = ["parallel"] }
 glob = "*"

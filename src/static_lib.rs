@@ -708,23 +708,23 @@ bitflags! {
 bitflags! {
     pub struct BufferComputeFormatFlags : u16 {
         /// 1 8-bit value
-        const F_8_X_1 = bgfx_sys::BGFX_BUFFER_COMPUTE_FORMAT_8X1 as _;
+        const F_8_X_1 = bgfx_sys::BGFX_BUFFER_COMPUTE_FORMAT_F8X1 as _;
         /// 2 8-bit values
-        const F_8_X_2 = bgfx_sys::BGFX_BUFFER_COMPUTE_FORMAT_8X2 as _;
+        const F_8_X_2 = bgfx_sys::BGFX_BUFFER_COMPUTE_FORMAT_F8X2 as _;
         /// 4 8-bit values
-        const F_8_X_4 = bgfx_sys::BGFX_BUFFER_COMPUTE_FORMAT_8X4 as _;
+        const F_8_X_4 = bgfx_sys::BGFX_BUFFER_COMPUTE_FORMAT_F8X4 as _;
         /// 1 16-bit value
-        const F_16_X_1 = bgfx_sys::BGFX_BUFFER_COMPUTE_FORMAT_16X1 as _;
+        const F_16_X_1 = bgfx_sys::BGFX_BUFFER_COMPUTE_FORMAT_F16X1 as _;
         /// 2 16-bit values
-        const F_16_X_2 = bgfx_sys::BGFX_BUFFER_COMPUTE_FORMAT_16X2 as _;
+        const F_16_X_2 = bgfx_sys::BGFX_BUFFER_COMPUTE_FORMAT_F16X2 as _;
         /// 4 16-bit values
-        const F_16_X_4 = bgfx_sys::BGFX_BUFFER_COMPUTE_FORMAT_16X4 as _;
+        const F_16_X_4 = bgfx_sys::BGFX_BUFFER_COMPUTE_FORMAT_F16X4 as _;
         /// 1 32-bit value
-        const F_32_X_1 = bgfx_sys::BGFX_BUFFER_COMPUTE_FORMAT_32X1 as _;
+        const F_32_X_1 = bgfx_sys::BGFX_BUFFER_COMPUTE_FORMAT_F32X1 as _;
         /// 2 32-bit values
-        const F_32_X_2 = bgfx_sys::BGFX_BUFFER_COMPUTE_FORMAT_32X2 as _;
+        const F_32_X_2 = bgfx_sys::BGFX_BUFFER_COMPUTE_FORMAT_F32X2 as _;
         /// 4 32-bit values
-        const F_32_X_4 = bgfx_sys::BGFX_BUFFER_COMPUTE_FORMAT_32X4 as _;
+        const F_32_X_4 = bgfx_sys::BGFX_BUFFER_COMPUTE_FORMAT_F32X4 as _;
     }
 }
 

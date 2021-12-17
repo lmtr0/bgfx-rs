@@ -6,8 +6,8 @@ all:
 	# ../../sys/bgfx/.build/linux64_gcc/bin/shadercRelease -f vs_image.sc -o vs_image.vk.h --type v --platform linux -p spirv --bin2c vs_image_vk
 	# ../../sys/bgfx/.build/linux64_gcc/bin/shadercRelease -f fs_image.sc -o fs_image.vk.h --type f --platform linux -p spirv --bin2c fs_image_vk
 
-	# ../../sys/bgfx/.build/linux64_gcc/bin/shadercRelease -f vs_image.sc -o vs_image.mt.h --type v --platform linux -p metal --bin2c vs_image_mt
-	# ../../sys/bgfx/.build/linux64_gcc/bin/shadercRelease -f fs_image.sc -o fs_image.mt.h --type f --platform linux -p metal --bin2c fs_image_mt
+	# ../../sys/bgfx/.build/linux64_gcc/bin/shadercRelease -f vs_image.sc -o vs_image.mt.h --type v --platform osx -p metal --bin2c vs_image_mt
+	# ../../sys/bgfx/.build/linux64_gcc/bin/shadercRelease -f fs_image.sc -o fs_image.mt.h --type f --platform osx -p metal --bin2c fs_image_mt
 
 	# ../../sys/bgfx/.build/linux64_gcc/bin/shadercRelease -f vs_image.sc -o vs_image.es.h --type v --platform linux -p 320_es --bin2c vs_image_es
 	# ../../sys/bgfx/.build/linux64_gcc/bin/shadercRelease -f fs_image.sc -o fs_image.es.h --type f --platform linux -p 320_es --bin2c fs_image_es
@@ -20,8 +20,8 @@ all:
 	../../sys/bgfx/.build/linux64_gcc/bin/shadercRelease -f vs_image.sc -o vs_image.vk --type v --platform linux -p spirv
 	../../sys/bgfx/.build/linux64_gcc/bin/shadercRelease -f fs_image.sc -o fs_image.vk --type f --platform linux -p spirv
 
-	../../sys/bgfx/.build/linux64_gcc/bin/shadercRelease -f vs_image.sc -o vs_image.mt --type v --platform linux -p metal
-	../../sys/bgfx/.build/linux64_gcc/bin/shadercRelease -f fs_image.sc -o fs_image.mt --type f --platform linux -p metal
+	../../sys/bgfx/.build/linux64_gcc/bin/shadercRelease -f vs_image.sc -o vs_image.mt --type v --platform osx -p metal
+	../../sys/bgfx/.build/linux64_gcc/bin/shadercRelease -f fs_image.sc -o fs_image.mt --type f --platform osx -p metal
 
 	../../sys/bgfx/.build/linux64_gcc/bin/shadercRelease -f vs_image.sc -o vs_image.es --type v --platform linux -p 320_es
 	../../sys/bgfx/.build/linux64_gcc/bin/shadercRelease -f fs_image.sc -o fs_image.es --type f --platform linux -p 320_es
