@@ -254,6 +254,6 @@ fn main() {
     
     println!("cargo:warning=All Done");
     println!("cargo:rerun-if-changed=build.rs");
-    println!("cargo:rerun-if-changed=src/ffi.rs");
-    println!("cargo:rerun-if-changed=src/lib.rs");
+    // println!("cargo:rerun-if-changed=src/ffi.rs");
+    // println!("cargo:rerun-if-changed=src/lib.rs");
 }

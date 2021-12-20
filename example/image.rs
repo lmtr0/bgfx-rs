@@ -17,7 +17,7 @@ struct PosColorVertex {
 }
 
 #[rustfmt::skip]
-static TRIANGLE_VERTICES: [PosColorVertex; 4] = [
+static VERTICES: [PosColorVertex; 4] = [
     PosColorVertex { _y: -1.0,  _x: -1.0, _z: 0.0}, // 0
     PosColorVertex { _y:  1.0,  _x: -1.0, _z: 0.0}, // 1
     PosColorVertex { _y:  1.0,  _x:  1.0, _z: 0.0}, // 2
@@ -25,7 +25,7 @@ static TRIANGLE_VERTICES: [PosColorVertex; 4] = [
 ];
 
 
-static TRIANGLE_INDICES: [i32; 6] = [
+static INDICES: [i32; 6] = [
     0, 1, 2,
     2, 3, 0
 ];
@@ -113,11 +113,11 @@ pub fn main() -> std::io::Result<()> {
         layout.add(Attrib::Position, 3, AttribType::Float, AddArgs::default());
         layout.end();
 
-        let verts_mem = Memory::reference(&TRIANGLE_VERTICES);
-        let index_mem = Memory::reference(&TRIANGLE_INDICES);
+        let verts_mem = Memory::reference(&VERTICES);
+        let index_mem = Memory::reference(&INDICES);
 
-        let vbh = bgfx::create_vertex_buffer(&verts_mem, &layout, BufferFlags::COMPUTE_READ_WRITE.bits());
-        let ibh =  bgfx::create_index_buffer(&index_mem, BufferFlags::COMPUTE_READ_WRITE.bits());
+        let vbh = bgfx::create_vertex_buffer(&verts_mem, &layout, BufferFlags::NONE.bits());
+        let ibh =  bgfx::create_index_buffer(&index_mem, BufferFlags::NONE.bits());
 
         let u_color = Uniform::create("u_texture", UniformType::Sampler, 1);
         let shader_program = load_shader_program("vs_image", "fs_image")?;
@@ -187,7 +187,7 @@ pub fn main() -> std::io::Result<()> {
             bgfx::set_uniform(&u_color, &data, 1);
 
             bgfx::set_transform(&transform.to_cols_array(), 1);
-            bgfx::set_vertex_buffer(0, &vbh, 0, TRIANGLE_VERTICES.len() as u32);
+            bgfx::set_vertex_buffer(0, &vbh, 0, VERTICES.len() as u32);
             bgfx::set_index_buffer(&ibh, 0, std::u32::MAX);
 
             bgfx::set_state(state, 0);
@@ -200,7 +200,7 @@ pub fn main() -> std::io::Result<()> {
             let transform = Mat4::from_translation(Vec3::new(x, y, 0.0));
             
             bgfx::set_transform(&transform.to_cols_array(), 1);
-            bgfx::set_vertex_buffer(0, &vbh, 0, TRIANGLE_VERTICES.len() as u32);
+            bgfx::set_vertex_buffer(0, &vbh, 0, VERTICES.len() as u32);
             bgfx::set_index_buffer(&ibh, 0, std::u32::MAX);
 
             bgfx::set_state(state, 0);

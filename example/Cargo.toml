@@ -49,3 +49,7 @@ path = "./winit.rs"
 [[bin]]
 name = "image"
 path = "./image.rs"
+
+[[bin]]
+name = "rect"
+path = "./rect.rs"
