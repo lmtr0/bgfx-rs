@@ -16,17 +16,15 @@ struct PosColorVertex {
 }
 
 #[rustfmt::skip]
-static TRIANGLE_VERTICES: [PosColorVertex; 4] = [
+static TRIANGLE_VERTICES: [PosColorVertex; 3] = [
     PosColorVertex { _y: -1.0,  _x: -1.0, _z: 0.0}, // 0
     PosColorVertex { _y:  1.0,  _x: -1.0, _z: 0.0}, // 1
     PosColorVertex { _y:  1.0,  _x:  1.0, _z: 0.0}, // 2
-    PosColorVertex { _y: -1.0,  _x:  1.0, _z: 0.0}, // 3
 ];
 
 
-static TRIANGLE_INDICES: [i32; 6] = [
+static TRIANGLE_INDICES: [i16; 3] = [
     0, 1, 2,
-    2, 3, 0
 ];
 pub fn load_shader_file(name: &str) -> std::io::Result<Vec<u8>> {
 
@@ -76,16 +74,13 @@ pub fn main() -> std::io::Result<()> {
     window.set_key_polling(true);
 
 
-    bgfx::set_platform_data(&get_platform_data(&window));
     let mut init = Init::new();
 
     init.type_r = get_render_type();
-    // init.resolution.width = WIDTH as u32;
-    // init.resolution.height = HEIGHT as u32;
     init.resolution.reset = ResetFlags::VSYNC.bits();
     init.debug = false;
     init.resolution.reset = ResetFlags::VSYNC.bits();
-    // init.platform_data = get_platform_data(&window);
+    init.platform_data = get_platform_data(&window);
 
     if !bgfx::init(&init) {
         panic!("failed to init bgfx");
@@ -110,8 +105,8 @@ pub fn main() -> std::io::Result<()> {
         let verts_mem = Memory::reference(&TRIANGLE_VERTICES);
         let index_mem = Memory::reference(&TRIANGLE_INDICES);
 
-        let vbh = bgfx::create_vertex_buffer(&verts_mem, &layout, BufferFlags::COMPUTE_READ_WRITE.bits());
-        let ibh =  bgfx::create_index_buffer(&index_mem, BufferFlags::COMPUTE_READ_WRITE.bits());
+        let vbh = bgfx::create_vertex_buffer(&verts_mem, &layout, BufferFlags::NONE.bits());
+        let ibh =  bgfx::create_index_buffer(&index_mem, BufferFlags::NONE.bits());
 
         let u_color = Uniform::create("u_color", UniformType::Vec4, 1);
         let shader_program = load_shader_program("vs_triangle", "fs_triangle")?;
@@ -137,7 +132,6 @@ pub fn main() -> std::io::Result<()> {
         
         bgfx::touch(0);
         while !window.should_close() {
-            // glfw.wait_events();
             glfw.poll_events();
             for (_, event) in glfw::flush_messages(&events) {
                 if let glfw::WindowEvent::Key(Key::Escape, _, Action::Press, _) = event {

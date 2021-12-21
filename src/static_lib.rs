@@ -3944,8 +3944,7 @@ impl Encoder {
 pub fn init(init: &Init) -> bool {
     unsafe {
         let _init = std::mem::transmute(init);
-        let _ret = bgfx_sys::bgfx_init(_init);
-        _ret
+        bgfx_sys::bgfx_init(_init)
     }
 }
 pub fn shutdown() {

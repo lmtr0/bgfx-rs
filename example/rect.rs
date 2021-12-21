@@ -1,4 +1,7 @@
+use std::mem::{size_of_val, size_of};
+
 use bgfx_rs::*;
+use glam::{Vec3, Mat4};
 use glfw::{Action, Key, WindowHint, ClientApiHint};
 
 mod common;
@@ -8,23 +11,23 @@ const WIDTH: usize = 1280;
 const HEIGHT: usize = 720;
 
 #[repr(packed)]
-struct PosColorVertex {
+struct PosVertex {
     _x: f32,
     _y: f32,
     // _z: f32,
 }
 
-static VERTICES: [PosColorVertex; 4] = [
-    PosColorVertex { _y: -0.5,  _x: -0.5}, // 0
-    PosColorVertex { _y:  0.5,  _x: -0.5}, // 1
-    PosColorVertex { _y:  0.5,  _x:  0.5}, // 2
-    PosColorVertex { _y: -0.5,  _x:  0.5}, // 3
+static VERTICES: [PosVertex; 3] = [
+    PosVertex { _y: -0.5,  _x: -0.5}, // 0
+    PosVertex { _y:  0.5,  _x: -0.5}, // 1
+    PosVertex { _y:  0.5,  _x:  0.5}, // 2
+    // PosVertex { _y: -0.5,  _x:  0.5}, // 3
 ];
 
 
-static INDICES: [i32; 6] = [
+static INDICES: [u32; 3] = [
     0, 1, 2,
-    2, 3, 0
+    // 2, 3, 0
 ];
 
 pub fn load_shader_file(name: &str) -> std::io::Result<Vec<u8>> {
@@ -87,7 +90,7 @@ pub fn main() -> std::io::Result<()> {
         panic!("failed to init bgfx");
     }
 
-    // bgfx::set_debug(DebugFlags::TEXT.bits());
+    bgfx::set_debug(DebugFlags::TEXT.bits());
     bgfx::set_view_clear(
         0,
         ClearFlags::COLOR.bits() | ClearFlags::DEPTH.bits(),
@@ -107,7 +110,7 @@ pub fn main() -> std::io::Result<()> {
         let index_mem = Memory::reference(&INDICES);
 
         let vbh = bgfx::create_vertex_buffer(&verts_mem, &layout, BufferFlags::NONE.bits());
-        let ibh =  bgfx::create_index_buffer(&index_mem, BufferFlags::NONE.bits());
+        let ibh =  bgfx::create_index_buffer(&index_mem, BufferFlags::INDEX_32.bits());
 
         let u_color = Uniform::create("u_color", UniformType::Vec4, 1);
         let shader_program = load_shader_program("vs_triangle", "fs_triangle")?;
@@ -135,24 +138,30 @@ pub fn main() -> std::io::Result<()> {
             }
 
             
-            let data = [count, 0.5, 1.0, 1.0];
-            frame += 1;
-            if frame == 150 {
-                if count > 1.0 {
-                    increment = -0.05;
-                }
-                else if count < 0.0 {
-                    increment = 0.05;
-                }
-                count += increment;
-                frame = 0;
-            }
+            let data = [0.5, 0.5, 1.0, 1.0];
+            // frame += 1;
+            // if frame == 150 {
+            //     if count > 1.0 {
+            //         increment = -0.05;
+            //     }
+            //     else if count < 0.0 {
+            //         increment = 0.05;
+            //     }
+            //     count += increment;
+            //     frame = 0;
+            // }
             
             
+            // let model = glam::Mat4::from_translation(Vec3::from_slice(&[0.0, 0.0, 0.0]));
+            // let view = glam::Mat4::from_translation(Vec3::from_slice(&[0.0, 0.0, 0.0]));
+            // let proj = glam::Mat4::orthographic_lh(1., 1., 1., 1., 1., 1.);
+            // bgfx::set_view_transform(0, &view.to_cols_array(), &proj.to_cols_array());
+            // bgfx::set_transform(&model.to_cols_array(), 1);
+
             bgfx::set_view_rect(0, 0, 0, size.0 as u16, size.1 as u16);
             bgfx::set_uniform(&u_color, &data, 1);
             bgfx::set_vertex_buffer(0, &vbh, 0, VERTICES.len() as u32);
-            bgfx::set_index_buffer(&ibh, 0, (INDICES.len() * 4) as u32);
+            bgfx::set_index_buffer(&ibh, 0,  3 as u32);
             bgfx::submit(0, &shader_program, SubmitArgs::default());
 
             bgfx::frame(false);
