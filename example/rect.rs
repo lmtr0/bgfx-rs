@@ -1,7 +1,5 @@
-use std::mem::{size_of_val, size_of};
 
 use bgfx_rs::*;
-use glam::{Vec3, Mat4};
 use glfw::{Action, Key, WindowHint, ClientApiHint};
 
 mod common;
@@ -17,17 +15,17 @@ struct PosVertex {
     // _z: f32,
 }
 
-static VERTICES: [PosVertex; 3] = [
+static VERTICES: [PosVertex; 4] = [
     PosVertex { _y: -0.5,  _x: -0.5}, // 0
     PosVertex { _y:  0.5,  _x: -0.5}, // 1
     PosVertex { _y:  0.5,  _x:  0.5}, // 2
-    // PosVertex { _y: -0.5,  _x:  0.5}, // 3
+    PosVertex { _y: -0.5,  _x:  0.5}, // 3
 ];
 
 
-static INDICES: [u32; 3] = [
+static INDICES: [u16; 6] = [
     0, 1, 2,
-    // 2, 3, 0
+    2, 3, 0
 ];
 
 pub fn load_shader_file(name: &str) -> std::io::Result<Vec<u8>> {
@@ -41,23 +39,23 @@ pub fn load_shader_file(name: &str) -> std::io::Result<Vec<u8>> {
         e => panic!("Unsupported render type {:#?}", e),
     };
 
-    let mut data = std::fs::read(format!("../resources/triangle/{}.{}", name, ext))?;
+    let mut data = std::fs::read(format!("../resources/rect/{}.{}", name, ext))?;
     data.push(0); // this is to terminate the data
     Ok(data)
 }
 
 // load shaders and create shader program
-pub fn load_shader_program(vs: &str, ps: &str) -> std::io::Result<Program> {
+pub fn load_shader_program(vs: &str, fs: &str) -> std::io::Result<Program> {
     let vs_data = load_shader_file(vs)?;
-    let ps_data = load_shader_file(ps)?;
+    let fs_data = load_shader_file(fs)?;
 
     let vs_data = Memory::copy(&vs_data);
-    let ps_data = Memory::copy(&ps_data);
+    let fs_data = Memory::copy(&fs_data);
 
     let vs_shader = bgfx::create_shader(&vs_data);
-    let ps_shader = bgfx::create_shader(&ps_data);
+    let fs_shader = bgfx::create_shader(&fs_data);
 
-    Ok(bgfx::create_program(&vs_shader, &ps_shader, true))
+    Ok(bgfx::create_program(&vs_shader, &fs_shader, true))
 }
 
 
@@ -110,10 +108,10 @@ pub fn main() -> std::io::Result<()> {
         let index_mem = Memory::reference(&INDICES);
 
         let vbh = bgfx::create_vertex_buffer(&verts_mem, &layout, BufferFlags::NONE.bits());
-        let ibh =  bgfx::create_index_buffer(&index_mem, BufferFlags::INDEX_32.bits());
+        let ibh =  bgfx::create_index_buffer(&index_mem, BufferFlags::NONE.bits());
 
         let u_color = Uniform::create("u_color", UniformType::Vec4, 1);
-        let shader_program = load_shader_program("vs_triangle", "fs_triangle")?;
+        let shader_program = load_shader_program("vs_rect", "fs_rect")?;
 
         let mut count = 0.0;
         let mut increment = 0.05;

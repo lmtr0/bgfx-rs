@@ -1,1 +1,1 @@
-vec3 a_position  : POSITION;
+vec2 a_position  : POSITION;

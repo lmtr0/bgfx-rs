@@ -1,9 +1,10 @@
+mod common;
+use std::io::Read;
+
+use common::{get_render_type, get_platform_data};
 use bgfx_rs::*;
 use glam::{Mat4, Vec3};
 use glfw::{Action, Key, WindowHint, ClientApiHint};
-
-mod common;
-use common::{get_render_type, get_platform_data};
 
 const WIDTH: usize = 1280;
 const HEIGHT: usize = 720;
@@ -16,15 +17,17 @@ struct PosColorVertex {
 }
 
 #[rustfmt::skip]
-static TRIANGLE_VERTICES: [PosColorVertex; 3] = [
-    PosColorVertex { _y: -1.0,  _x: -1.0, _z: 0.0}, // 0
-    PosColorVertex { _y:  1.0,  _x: -1.0, _z: 0.0}, // 1
-    PosColorVertex { _y:  1.0,  _x:  1.0, _z: 0.0}, // 2
+static TRIANGLE_VERTICES: [PosColorVertex; 4] = [
+    PosColorVertex { _y: -0.5,  _x: -0.5, _z: 0.0}, // 0
+    PosColorVertex { _y:  0.5,  _x: -0.5, _z: 0.0}, // 1
+    PosColorVertex { _y:  0.5,  _x:  0.5, _z: 0.0}, // 2
+    PosColorVertex { _y: -0.5,  _x:  0.5, _z: 0.0}, // 3
 ];
 
 
-static TRIANGLE_INDICES: [i16; 3] = [
+static TRIANGLE_INDICES: [u32; 6] = [
     0, 1, 2,
+    2, 3, 0
 ];
 pub fn load_shader_file(name: &str) -> std::io::Result<Vec<u8>> {
 
@@ -74,8 +77,8 @@ pub fn main() -> std::io::Result<()> {
     window.set_key_polling(true);
 
 
+    // initialization of the library
     let mut init = Init::new();
-
     init.type_r = get_render_type();
     init.resolution.reset = ResetFlags::VSYNC.bits();
     init.debug = false;
@@ -105,8 +108,8 @@ pub fn main() -> std::io::Result<()> {
         let verts_mem = Memory::reference(&TRIANGLE_VERTICES);
         let index_mem = Memory::reference(&TRIANGLE_INDICES);
 
-        let vbh = bgfx::create_vertex_buffer(&verts_mem, &layout, BufferFlags::NONE.bits());
-        let ibh =  bgfx::create_index_buffer(&index_mem, BufferFlags::NONE.bits());
+        let vbh = bgfx::create_vertex_buffer(&verts_mem, &layout, BufferFlags::COMPUTE_READ_WRITE.bits());
+        let ibh =  bgfx::create_index_buffer(&index_mem, BufferFlags::COMPUTE_READ_WRITE.bits());
 
         let u_color = Uniform::create("u_color", UniformType::Vec4, 1);
         let shader_program = load_shader_program("vs_triangle", "fs_triangle")?;
@@ -122,7 +125,7 @@ pub fn main() -> std::io::Result<()> {
 
         let at = Vec3::new(0.0, 0.0, 0.0); // total rotation
         //                                        V this controls the width of the view
-        let eye = Vec3::new(0.0, 0.0, -5.0);
+        let eye = Vec3::new(0.0, 0.0, -25.0);
         let up = Vec3::new(0.0, 1.0, 0.0); // individual object rotation
 
         let mut count = 0.0;
@@ -132,6 +135,7 @@ pub fn main() -> std::io::Result<()> {
         
         bgfx::touch(0);
         while !window.should_close() {
+            // glfw.wait_events();
             glfw.poll_events();
             for (_, event) in glfw::flush_messages(&events) {
                 if let glfw::WindowEvent::Key(Key::Escape, _, Action::Press, _) = event {
@@ -146,20 +150,16 @@ pub fn main() -> std::io::Result<()> {
                 old_size = size;
             }
 
+            // view information
             let aspect = size.0 as f32 / size.1 as f32;
-
             let proj_mtx = Mat4::perspective_lh(60.0 * (std::f32::consts::PI / 180.0), aspect, 0.1, 100.0);
             let view_mtx = Mat4::look_at_lh(eye, at, up);
 
             bgfx::set_view_rect(0, 0, 0, size.0 as u16, size.1 as u16);
-
             bgfx::set_view_transform(0, &view_mtx.to_cols_array(), &proj_mtx.to_cols_array());
 
-            let x = -2.0;
-            let y = 0.0;
-            let transform = Mat4::from_translation(Vec3::new(x, y, 0.0));
-            
-            let data = [count, 0.5, 1.0, 1.0];
+            // color of triangles
+            let u_color_data = [count, 0.5, 1.0, 1.0];
             frame += 1;
             if frame == 150 {
                 if count > 1.0 {
@@ -172,9 +172,14 @@ pub fn main() -> std::io::Result<()> {
                 frame = 0;
             }
 
-            bgfx::set_uniform(&u_color, &data, 1);
+            bgfx::set_uniform(&u_color, &u_color_data, 1);
 
-            bgfx::set_transform(&transform.to_cols_array(), 1);
+            // first triangle
+            let x = -2.0;
+            let y = 0.0;
+            let transform = Mat4::from_translation(Vec3::new(x, y, 0.0));
+
+            // bgfx::set_transform(&transform.to_cols_array(), 1);
             bgfx::set_vertex_buffer(0, &vbh, 0, TRIANGLE_VERTICES.len() as u32);
             bgfx::set_index_buffer(&ibh, 0, std::u32::MAX);
 
