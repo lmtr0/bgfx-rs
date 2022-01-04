@@ -15,7 +15,6 @@ struct PosColorVertex {
     _y: f32,
 }
 
-#[rustfmt::skip]
 static TRIANGLE_VERTICES: [PosColorVertex; 4] = [
     PosColorVertex { _y: -0.5,  _x: -0.5 }, // 0
     PosColorVertex { _y:  0.5,  _x: -0.5 }, // 1
@@ -23,18 +22,18 @@ static TRIANGLE_VERTICES: [PosColorVertex; 4] = [
     PosColorVertex { _y: -0.5,  _x:  0.5 }, // 3
 ];
 
-
 static TRIANGLE_INDICES: [i32; 6] = [
     0, 1, 2,
     2, 3, 0
 ];
+
 pub fn load_shader_file(name: &str) -> std::io::Result<Vec<u8>> {
 
     let ext = match bgfx::get_renderer_type() {
-        RendererType::Direct3D11 => "d11",
+        // RendererType::Direct3D11 => path.push("d11"),
         RendererType::OpenGL => "gl",
-        RendererType::Metal => "mt",
-        RendererType::OpenGLES => "el",
+        // RendererType::Metal => path.push("mt"),
+        // RendererType::OpenGLES => path.push("el"),
         RendererType::Vulkan => "vk",
         e => panic!("Unsupported render type {:#?}", e),
     };
@@ -108,7 +107,6 @@ pub fn main() -> std::io::Result<()> {
     let vbh = bgfx::create_vertex_buffer(&verts_mem, &layout, BufferFlags::NONE.bits());
     let ibh =  bgfx::create_index_buffer(&index_mem, BufferFlags::NONE.bits());
 
-    // let u_color = bgfx::Uniform
     let shader_program = load_shader_program("vs_triangle", "fs_triangle")?;
 
     let state = (StateWriteFlags::R
@@ -140,13 +138,33 @@ pub fn main() -> std::io::Result<()> {
             bgfx::reset(size.0 as _, size.1 as _, ResetArgs::default());
             old_size = size;
         }
+
+        let aspect = size.0 as f32 / size.1 as f32;
+
+        let proj_mtx = Mat4::perspective_lh(60.0 * (std::f32::consts::PI / 180.0), aspect, 0.1, 100.0);
+        let view_mtx = Mat4::look_at_lh(eye, at, up);
+
         bgfx::set_view_rect(0, 0, 0, size.0 as _, size.1 as _);
         bgfx::touch(0);
+
+        bgfx::set_view_transform(0, &view_mtx.to_cols_array(), &proj_mtx.to_cols_array());
 
         let x = -2.0;
         let y = 0.0;
         let transform = Mat4::from_translation(Vec3::new(x, y, 0.0));
         
+        bgfx::set_transform(&transform.to_cols_array(), 1);
+        bgfx::set_vertex_buffer(0, &vbh, 0, TRIANGLE_VERTICES.len() as u32);
+        bgfx::set_index_buffer(&ibh, 0, std::u32::MAX);
+
+        bgfx::set_state(state, 0);
+        bgfx::submit(0, &shader_program, SubmitArgs::default());
+        
+        let x = 2.0;
+        let y = 0.0;
+        let transform = Mat4::from_translation(Vec3::new(x, y, 0.0));
+        
+        bgfx::set_transform(&transform.to_cols_array(), 1);
         bgfx::set_vertex_buffer(0, &vbh, 0, TRIANGLE_VERTICES.len() as u32);
         bgfx::set_index_buffer(&ibh, 0, std::u32::MAX);
 

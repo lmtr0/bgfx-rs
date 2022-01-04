@@ -31,10 +31,10 @@ pub fn load_shader_file(name: &str) -> std::io::Result<Vec<u8>> {
 
     let ext = match bgfx::get_renderer_type() {
         // RendererType::Direct3D11 => path.push("d11"),
-        RendererType::OpenGL => "gl",
-        // RendererType::Metal => path.push("mt"),
-        // RendererType::OpenGLES => path.push("el"),
-        RendererType::Vulkan => "vk",
+        RendererType::OpenGL    => "gl",
+        RendererType::Metal     => "mt",
+        RendererType::OpenGLES  => "es",
+        RendererType::Vulkan    => "vk",
         e => panic!("Unsupported render type {:#?}", e),
     };
 

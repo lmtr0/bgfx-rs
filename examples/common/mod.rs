@@ -47,7 +47,7 @@ pub fn get_platform_data(window: &Window) -> PlatformData {
 
 pub fn get_render_type() -> RendererType {
     #[cfg(any(target_os = "linux", target_os = "windows"))]
-    return RendererType::OpenGL;
+    return RendererType::Vulkan;
     #[cfg(target_os = "macos")]
     return RendererType::Metal;
 }

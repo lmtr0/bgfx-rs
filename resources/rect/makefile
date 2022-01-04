@@ -1,19 +1,4 @@
 all:
-	@echo "Shaders Header"
-	@../../sys/bgfx/.build/linux64_gcc/bin/shadercRelease -f vs_rect.sc -o vs_rect.gl.h --type v --platform linux -p 440 --bin2c vs_rect_gl
-	@../../sys/bgfx/.build/linux64_gcc/bin/shadercRelease -f fs_rect.sc -o fs_rect.gl.h --type f --platform linux -p 440 --bin2c fs_rect_gl
-
-	@../../sys/bgfx/.build/linux64_gcc/bin/shadercRelease -f vs_rect.sc -o vs_rect.vk.h --type v --platform linux -p spirv --bin2c vs_rect_vk
-	@../../sys/bgfx/.build/linux64_gcc/bin/shadercRelease -f fs_rect.sc -o fs_rect.vk.h --type f --platform linux -p spirv --bin2c fs_rect_vk
-
-	@../../sys/bgfx/.build/linux64_gcc/bin/shadercRelease -f vs_rect.sc -o vs_rect.mt.h --type v --platform osx -p metal --bin2c vs_rect_mt
-	@../../sys/bgfx/.build/linux64_gcc/bin/shadercRelease -f fs_rect.sc -o fs_rect.mt.h --type f --platform osx -p metal --bin2c fs_rect_mt
-
-	@../../sys/bgfx/.build/linux64_gcc/bin/shadercRelease -f vs_rect.sc -o vs_rect.es.h --type v --platform linux -p 320_es --bin2c vs_rect_es
-	@../../sys/bgfx/.build/linux64_gcc/bin/shadercRelease -f fs_rect.sc -o fs_rect.es.h --type f --platform linux -p 320_es --bin2c fs_rect_es
-
-	@echo "Shaders"
-
 	@../../sys/bgfx/.build/linux64_gcc/bin/shadercRelease -f vs_rect.sc -o vs_rect.gl --type v --platform linux -p 440
 	@../../sys/bgfx/.build/linux64_gcc/bin/shadercRelease -f fs_rect.sc -o fs_rect.gl --type f --platform linux -p 440
 
