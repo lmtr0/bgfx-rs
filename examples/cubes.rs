@@ -4,7 +4,7 @@ use glfw::{Action, Context, Key, WindowHint, ClientApiHint};
 use std::{time::Instant};
 
 mod common;
-use common::{_load_shader_program, get_render_type, get_platform_data};
+use common::{get_platform_data, get_render_type, _load_shader_program};
 
 const WIDTH: usize = 1280;
 const HEIGHT: usize = 720;
@@ -20,13 +20,13 @@ struct PosColorVertex {
 #[rustfmt::skip]
 static CUBE_VERTICES: [PosColorVertex; 8] = [
     PosColorVertex { _x: -1.0, _y:  1.0, _z:  1.0, _abgr: 0xff000000 },
-    PosColorVertex { _x:  1.0, _y:  1.0, _z:  1.0, _abgr: 0xffff0000 },
-    PosColorVertex { _x: -1.0, _y: -1.0, _z:  1.0, _abgr: 0xff000000 },
-    PosColorVertex { _x:  1.0, _y: -1.0, _z:  1.0, _abgr: 0xff000000 },
-    PosColorVertex { _x: -1.0, _y:  1.0, _z: -1.0, _abgr: 0xff000000 },
-    PosColorVertex { _x:  1.0, _y:  1.0, _z: -1.0, _abgr: 0xff000000 },
-    PosColorVertex { _x: -1.0, _y: -1.0, _z: -1.0, _abgr: 0xff000000 },
-    PosColorVertex { _x:  1.0, _y: -1.0, _z: -1.0, _abgr: 0xff000000 },
+    PosColorVertex { _x:  1.0, _y:  1.0, _z:  1.0, _abgr: 0xff0000ff },
+    PosColorVertex { _x: -1.0, _y: -1.0, _z:  1.0, _abgr: 0xff00ff00 },
+    PosColorVertex { _x:  1.0, _y: -1.0, _z:  1.0, _abgr: 0xff00ffff },
+    PosColorVertex { _x: -1.0, _y:  1.0, _z: -1.0, _abgr: 0xffff0000 },
+    PosColorVertex { _x:  1.0, _y:  1.0, _z: -1.0, _abgr: 0xffff00ff },
+    PosColorVertex { _x: -1.0, _y: -1.0, _z: -1.0, _abgr: 0xffffff00 },
+    PosColorVertex { _x:  1.0, _y: -1.0, _z: -1.0, _abgr: 0xffffffff },
 ];
 
 #[rustfmt::skip]
@@ -45,9 +45,6 @@ static CUBE_INDICES: [u16; 36] = [
     6, 3, 7,
 ];
 
-
-
-
 pub fn main() -> std::io::Result<()> {
     let mut glfw = glfw::init(glfw::FAIL_ON_ERRORS).unwrap();
     glfw.window_hint(WindowHint::ClientApi(ClientApiHint::NoApi));
@@ -56,7 +53,7 @@ pub fn main() -> std::io::Result<()> {
         .create_window(
             WIDTH as _,
             HEIGHT as _,
-            "cube.rs bgfx-rs example - ESC to close",
+            "cubes.rs bgfx-rs example - ESC to close",
             glfw::WindowMode::Windowed,
         )
         .expect("Failed to create GLFW window.");
@@ -64,8 +61,6 @@ pub fn main() -> std::io::Result<()> {
     window.set_key_polling(true);
 
     let pd = get_platform_data(&window);
-
-    bgfx::set_platform_data(&pd);
 
     let mut init = Init::new();
 
@@ -156,24 +151,24 @@ pub fn main() -> std::io::Result<()> {
 
             bgfx::set_view_transform(0, &view.to_cols_array(), &persp.to_cols_array());
 
-            let xx = 5;
-            let yy = 5;
+            for yy in 0..11 {
+                for xx in 0..11 {
+                    let x = -15.0 + (xx as f32) * 3.0;
+                    let y = -15.0 + (yy as f32) * 3.0;
+                    let xr = t + (xx as f32) * 0.21;
+                    let yr = t + (yy as f32) * 0.37;
 
-            let x = -15.0 + (xx as f32) * 3.0;
-            let y = -15.0 + (yy as f32) * 3.0;
-            let xr = t + (xx as f32) * 0.21;
-            let yr = t + (yy as f32) * 0.37;
+                    let rot = Mat4::from_euler(EulerRot::XYZ, xr, yr, 0.0);
+                    let transform = Mat4::from_translation(Vec3::new(x*2.0, y, 0.0)) * rot;
 
+                    bgfx::set_transform(&transform.to_cols_array(), 1);
+                    bgfx::set_vertex_buffer(0, &vbh, 0, std::u32::MAX);
+                    bgfx::set_index_buffer(&ibh, 0, std::u32::MAX);
 
-            let rot = Mat4::from_euler(EulerRot::XYZ, xr, yr, 0.0);
-            let transform = Mat4::from_translation(Vec3::new(x*2.0, y, 0.0)) * rot;
-
-            bgfx::set_transform(&transform.to_cols_array(), 1);
-            bgfx::set_vertex_buffer(0, &vbh, 0, std::u32::MAX);
-            bgfx::set_index_buffer(&ibh, 0, std::u32::MAX);
-
-            bgfx::set_state(state, 0);
-            bgfx::submit(0, &shader_program, SubmitArgs::default());
+                    bgfx::set_state(state, 0);
+                    bgfx::submit(0, &shader_program, SubmitArgs::default());
+                }
+            }
 
             bgfx::frame(false);
         }

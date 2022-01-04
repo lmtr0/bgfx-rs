@@ -20,7 +20,7 @@ fn render_text<S: AsRef<str>>(text: S) -> Bitmap {
     // Init the library
     let lib = Library::init().unwrap();
     // Load a font face
-    let face = lib.new_face("../resources/fonts/Nunito-Regular.ttf", 0).unwrap();
+    let face = lib.new_face("./fonts/Nunito-Regular.ttf", 0).unwrap();
     // Set the font size
     face.set_char_size(32 * text.len() as isize, 0, 50, 10).unwrap();
     // Load a character
@@ -47,7 +47,7 @@ pub fn load_shader_file(name: &str) -> std::io::Result<Vec<u8>> {
         e => panic!("Unsupported render type {:#?}", e),
     };
 
-    let mut data = std::fs::read(format!("../resources/font/{}.{}", name, ext))?;
+    let mut data = std::fs::read(format!("./font/{}.{}", name, ext))?;
     data.push(0); // this is to terminate the data
     Ok(data)
 }

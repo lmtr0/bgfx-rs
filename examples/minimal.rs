@@ -22,8 +22,6 @@ fn main() {
 
     let mut init = Init::new();
     init.type_r = get_render_type();
-    // init.resolution.height = 0;
-    // init.resolution.width = 0;
     init.resolution.reset = ResetFlags::NONE.bits(); // this makes the window recreation smoth
     init.platform_data = get_platform_data(&window);
 

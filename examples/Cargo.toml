@@ -9,7 +9,7 @@ edition = "2021"
 glfw = "*"
 glam = "*"
 raw-window-handle = "*"
-bgfx-rs = { path="../" }
+bgfx-rs = { path="../bgfx" }
 freetype-rs = "0.29.0"
 winit = "0.22.2"
 image = "0.23.14"

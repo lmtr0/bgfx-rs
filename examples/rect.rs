@@ -12,7 +12,6 @@ const HEIGHT: usize = 720;
 struct PosVertex {
     _x: f32,
     _y: f32,
-    // _z: f32,
 }
 
 static VERTICES: [PosVertex; 4] = [
@@ -23,7 +22,7 @@ static VERTICES: [PosVertex; 4] = [
 ];
 
 
-static INDICES: [u16; 6] = [
+static INDICES: [u32; 6] = [
     0, 1, 2,
     2, 3, 0
 ];
@@ -39,7 +38,7 @@ pub fn load_shader_file(name: &str) -> std::io::Result<Vec<u8>> {
         e => panic!("Unsupported render type {:#?}", e),
     };
 
-    let mut data = std::fs::read(format!("../resources/rect/{}.{}", name, ext))?;
+    let mut data = std::fs::read(format!("./resources/rect/{}.{}", name, ext))?;
     data.push(0); // this is to terminate the data
     Ok(data)
 }
@@ -57,8 +56,6 @@ pub fn load_shader_program(vs: &str, fs: &str) -> std::io::Result<Program> {
 
     Ok(bgfx::create_program(&vs_shader, &fs_shader, true))
 }
-
-
 
 pub fn main() -> std::io::Result<()> {
     let mut glfw = glfw::init(glfw::FAIL_ON_ERRORS).unwrap();
@@ -112,13 +109,17 @@ pub fn main() -> std::io::Result<()> {
 
         let u_color = Uniform::create("u_color", UniformType::Vec4, 1);
         let shader_program = load_shader_program("vs_rect", "fs_rect")?;
+        let state = (StateWriteFlags::R
+            | StateWriteFlags::G
+            | StateWriteFlags::B
+            | StateWriteFlags::A
+            | StateWriteFlags::Z)
+            .bits()
+            | StateDepthTestFlags::LESS.bits()
+            | StateCullFlags::CW.bits();
 
-        let mut count = 0.0;
-        let mut increment = 0.05;
-        let mut frame = 0;
         let mut old_size = (0, 0);
         
-        bgfx::touch(0);
         while !window.should_close() {
             // glfw.wait_events();
             glfw.poll_events();
@@ -127,7 +128,8 @@ pub fn main() -> std::io::Result<()> {
                     window.set_should_close(true)
                 }
             }
-
+            
+            bgfx::touch(0);
             let size = window.get_framebuffer_size();
 
             if old_size != size {
@@ -148,20 +150,20 @@ pub fn main() -> std::io::Result<()> {
             //     count += increment;
             //     frame = 0;
             // }
-            
-            
-            // let model = glam::Mat4::from_translation(Vec3::from_slice(&[0.0, 0.0, 0.0]));
-            // let view = glam::Mat4::from_translation(Vec3::from_slice(&[0.0, 0.0, 0.0]));
-            // let proj = glam::Mat4::orthographic_lh(1., 1., 1., 1., 1., 1.);
-            // bgfx::set_view_transform(0, &view.to_cols_array(), &proj.to_cols_array());
-            // bgfx::set_transform(&model.to_cols_array(), 1);
 
+            // viewport
             bgfx::set_view_rect(0, 0, 0, size.0 as u16, size.1 as u16);
+            
+            // geometry and position
+            bgfx::set_vertex_buffer(0, &vbh, 0, std::u32::MAX);
+            bgfx::set_index_buffer(&ibh, 0, std::u32::MAX);
+            
+            // color
             bgfx::set_uniform(&u_color, &data, 1);
-            bgfx::set_vertex_buffer(0, &vbh, 0, VERTICES.len() as u32);
-            bgfx::set_index_buffer(&ibh, 0,  3 as u32);
+            
+            // renders
+            bgfx::set_state(state, 0);
             bgfx::submit(0, &shader_program, SubmitArgs::default());
-
             bgfx::frame(false);
         }
     }

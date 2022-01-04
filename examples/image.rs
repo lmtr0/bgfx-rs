@@ -40,7 +40,7 @@ pub fn load_shader_file(name: &str) -> std::io::Result<Vec<u8>> {
         e => panic!("Unsupported render type {:#?}", e),
     };
 
-    let mut data = std::fs::read(format!("../resources/image/{}.{}", name, ext))?;
+    let mut data = std::fs::read(format!("./resources/image/{}.{}", name, ext))?;
     data.push(0); // this is to terminate the data
     Ok(data)
 }
@@ -62,7 +62,7 @@ pub fn load_shader_program(vs: &str, ps: &str) -> std::io::Result<Program> {
 
 
 pub fn main() -> std::io::Result<()> {
-    let img = image::open("../resources/image/image.jpeg");
+    let img = image::open("./image/image.jpeg");
     let img = img.unwrap().to_bgr8();
     
     println!("Dim: {:?}", img.dimensions());
@@ -127,9 +127,7 @@ pub fn main() -> std::io::Result<()> {
             | StateWriteFlags::B
             | StateWriteFlags::A
             | StateWriteFlags::Z)
-            .bits()
-            | StateDepthTestFlags::LESS.bits()
-            | StateCullFlags::CW.bits();
+            .bits();
 
         let at = Vec3::new(0.0, 0.0, 0.0); // total rotation
         //                                        V this controls the width of the view

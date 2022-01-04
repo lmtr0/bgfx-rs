@@ -1,0 +1,22 @@
+[package]
+name = "bgfx-rs"
+license = "BSD-2-Clause"
+authors = ["Daniel Collin <daniel@collin.com>"]
+categories = ["rendering::graphics-api"]
+description = "Bindings for bgfx"
+repository = "https://github.com/emoon/bgfx-rs"
+documentation = "https://docs.rs/bgfx-rs/0.1/bgfx-rs"
+version = "0.4.1"
+edition = "2021"
+readme = "README.md"
+
+[lib]
+crate_type = [ "rlib" ]
+
+[badges]
+maintenance = {status = "actively-developed"}
+
+[dependencies]
+bgfx-sys = { path = "../sys"}
+bitflags = "1.3.2"
+cfixed-string = "1.0"

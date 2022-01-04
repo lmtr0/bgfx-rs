@@ -23,7 +23,6 @@ pub fn main() -> std::io::Result<()>  {
         .expect("Failed to create GLFW window.");
 
     window.set_key_polling(true);
-    window.make_current();
 
     let pd = get_platform_data(&window);
     let mut init = Init::new();

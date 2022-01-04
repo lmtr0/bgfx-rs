@@ -54,7 +54,7 @@ pub fn get_render_type() -> RendererType {
 
 pub fn _load_shader_file(name: &str) -> std::io::Result<Vec<u8>> {
     let mut path = PathBuf::with_capacity(512);
-    path.push("../resources/examples/runtime/shaders");
+    path.push("./resources/examples/runtime/shaders");
 
     match bgfx::get_renderer_type() {
         RendererType::Direct3D11 => path.push("dx11"),
